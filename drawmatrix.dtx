@@ -1,0 +1,544 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2014 by Elmar Peise
+% -----------------------------------------
+%
+% This file may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License, either version 1.2 of this license or (at your
+% option) any later version.  The latest version of this license is an:
+%
+%   http://www.latex-project.org/lppl.txt
+%
+% and version 1.2 or later is part of all distributions of LaTeX version
+% 1999/12/01 or later.
+%
+% \fi
+% 
+% \iffalse
+%<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<package>\ProvidesPackage{drawmatrix}
+%<package> [2014/02/23 v1.0 drawmatrix package]
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{hypdoc}
+\usepackage{drawmatrix}
+\EnableCrossrefs
+\RecordChanges
+\CodelineIndex
+\OnlyDescription
+\begin{document}
+  \DocInput{drawmatrix.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{131}
+%
+% \CharacterTable
+%   {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%    Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%    Digits        \0\1\2\3\4\5\6\7\8\9
+%    Exclamation   \!     Double quote  \"     Hash (number) \#
+%    Dollar        \$     Percent       \%     Ampersand     \&
+%    Acute accent  \'     Left paren    \(     Right paren   \)
+%    Asterisk      \*     Plus          \+     Comma         \,
+%    Minus         \-     Point         \.     Solidus       \/
+%    Colon         \:     Semicolon     \;     Less than     \<
+%    Equals        \=     Greater than  \>     Question mark \?
+%    Commercial at \@     Left bracket  \[     Backslash     \\
+%    Right bracket \]     Circumflex    \^     Underscore    \_
+%    Grave accent  \`     Left brace    \{     Vertical bar  \|
+%    Right brace   \}     Tilde         \~}
+%
+% \changes{v1.0}{2014/02/23}{Initial Version}
+%
+%
+% \GetFileInfo{drawmatrix.sty}
+%
+% \title{The \textsf{drawmatrix} package}
+% \author{Elmar Peise \\ \texttt{peise@aices.rwth-aachen.de}}
+% \date{\filedate \ \fileversion}
+% 
+% \newenvironment{example}{
+%   \begin{center}
+%   \begin{minipage}{.9\textwidth}
+%       \scriptsize
+% }{
+%   \end{minipage}
+%   \end{center}
+% }
+%
+% \maketitle
+%
+% \begin{abstract}
+%   This package provides macros to draw visual representations matrices.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Introduction}
+% I think visually a lot.  So, when I work with matrices, I draw them --- on
+% paper, on the blackboard, in documents, in presentations.  This package
+% provides simple, yet powerful tools to do so in \LaTeX.  For instance,
+% $$
+%   \drawmatrix[lower]{L} \;
+%   \drawmatrix[width=.5cm]{X} +
+%   \drawmatrix[width=.5]{X} \;
+%   \drawmatrix[upper, size=.5, bbox height=1]{U} =
+%   \drawmatrix[width=.5]{C}
+% $$
+% is typeset with this package as follows: 
+% \begin{verbatim}
+% $$
+%   \drawmatrix[lower]{L} \;
+%   \drawmatrix[width=.5]{X} +
+%   \drawmatrix[width=.5]{X} \;
+%   \drawmatrix[upper, size=.5, bbox height=1]{U} =
+%   \drawmatrix[width=.5]{C}
+% $$
+% \end{verbatim}
+%
+%
+% \section{Drawing Matrices}
+% \DescribeMacro\drawmatrix |\drawmatrix|\oarg{options}\marg{label} draws a
+% matrix labeled \meta{label}: |\drawmatrix{A}| produces \drawmatrix{A}.  The
+% \meta{options}, which modify various aspects of drawn matrix through {\sc
+% pgf}'s key-value system, are introduced in the following sections.
+%
+% The matrix is centered around its label, which is aligned with the surrounding
+% text.  The label is typeset in the surrounding mode and style.
+% \begin{example}
+%   |$\drawmatrix{A}$|:
+%    $\drawmatrix{A}$
+%
+%   |{\bf \drawmatrix{A}}|:
+%    {\bf \drawmatrix{A}}
+%
+%   |{\large \drawmatrix{A}}|:
+%    {\large \drawmatrix{A}}
+% \end{example}
+% In equations, parentheses (spanned with |\left| and |\right|), subscripts, and
+% superscripts naturally extend to the drawn shape: $\left(\drawmatrix{A}_i +
+% \drawmatrix{B}^{-1}\right) \drawmatrix{C}$.  Used in matrix products such as
+% $\drawmatrix{A} \drawmatrix{B}$, a little space (|\;|) helps to yield a more
+% natural result: $\drawmatrix{A} \; \drawmatrix{B}$.
+%
+% \subsection{Size}
+% By default, matrices are 1cm$\times$1cm large.  The width and height of a
+% matrix are set through, respectively, \DescribeMacro{height}
+% |width=|\meta{expr} and \DescribeMacro{width} |height=|\meta{expr}.
+% \meta{expr} is evaluated by {\sc pgf}'s mathematical engine; if it contains no
+% units cm is implied, otherwise, all numbers without units are taken as in pt.
+% \begin{example}
+%   |\drawmatrix[height=.7, width=1cm + 10]{A}|: 
+%    \drawmatrix[height=.7, width=1cm + 10]{A}
+% \end{example}
+%
+% \DescribeMacro{size} |size=|\meta{expr} sets both the width and height of the
+% drawn matrix to \meta{expr}, resulting in a square matrix.
+%
+% \subsection{Shape}
+% By default matrices are rectangular.  Lower and upper triangular (and
+% trapezoidal) matrices are obtained by, respectively, setting the keys
+% \DescribeMacro{lower} |lower| and \DescribeMacro{upper} |upper|.  Hereby,
+% non-square matrices become trapezoidal.
+% \begin{example}
+%   |\drawmatrix[lower]{L}|: 
+%    \drawmatrix[lower]{L}
+%
+%   |\drawmatrix[upper, width=1.5]{U}|: 
+%    \drawmatrix[upper, width=1.5]{U}
+% \end{example}
+%
+% Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
+% The width, i.e. the horizontal/vertical extent from the diagonal, of the band
+% (default: 0.3cm) is specified through \DescribeMacro{bandwidth}
+% |bandwidth=|\meta{expr}; 
+% \begin{example}
+%   |\drawmatrix[banded]{B}|: 
+%    \drawmatrix[banded]{B}
+%
+%   |\drawmatrix[banded, bandwidth=.5]{B}|: 
+%    \drawmatrix[banded, bandwidth=.5]{B}
+% \end{example}
+%
+% |banded| can be combined with |lower| or |upper| to draw the intersection of
+% both shapes. However, banded matrices are always drawn as square.
+% \begin{example}
+%   |\drawmatrix[banded, lower]{L}|: 
+%    \drawmatrix[banded, lower]{L}
+% \end{example}
+%
+% \subsection{Colors and Style}
+% By default, matrices are drawn in gray and filled white.  The TikZ keys
+% \DescribeMacro{draw} |draw=|\meta{color} and \DescribeMacro{fill}
+% |fill=|\meta{color} are used to set these colors.  In fact, all keys not
+% recognized by this package are passed to the TikZ |\filldraw| command drawing
+% the matrix.
+% \begin{example}
+%   |\drawmatrix[fill=yellow, draw=blue]{A}|: 
+%    \drawmatrix[fill=yellow, draw=blue]{A}
+%
+%   |\drawmatrix[very thick, dashed]{A}|: 
+%    \drawmatrix[very thick, dashed]{A}
+% \end{example}
+% 
+% \subsection{The Bounding Box}
+% All matrices are are contained in a rectangular bounding box.  To draw this
+% bounding box (e.g. to visualize the 0 entries in the matrix),
+% \DescribeMacro{bbox style} |bbox style=|\marg{style} is used;  this style
+% is applied to the TikZ |\node| that is the bounding box.
+% \begin{example}
+%   |\drawmatrix[lower, bbox style={fill=blue!10}]{L}|: 
+%    \drawmatrix[lower, bbox style={fill=blue!10}]{L}
+% \end{example}
+% 
+% By default, the bounding box is just large enough to contain the matrix. Its
+% size is changed through the keys
+% \DescribeMacro{bbox height} |bbox height=|\meta{expr} and
+% \DescribeMacro{bbox width} |bbox width=|\meta{expr} (or
+% \DescribeMacro{bbox size} |bbox size=|\meta{expr} to set them both).  The
+% label of the matrix (and thus the alignment with respect to the surrounding
+% text) are fixed at the center of the bounding box, while the matrix is
+% positioned at its top-left corner.
+% \begin{example}
+%   |\drawmatrixset{bbox style={fill=blue!10}}|
+%    \drawmatrixset{bbox style={fill=blue!10}}
+%
+%   |\drawmatrix[bbox width=2, bbox height=1.5]{A}|: 
+%    \drawmatrix[bbox width=2, bbox height=1.5]{A}
+% \end{example}
+% 
+% \sloppy The matrix can be positioned within its bounding box through
+% \DescribeMacro{offset height} |offset height=|\meta{expr} and
+% \DescribeMacro{offset width} |offset width=|\meta{expr} (or just
+% \DescribeMacro{offset} |offset=|\meta{expr} to shift along the diagonal).
+% \begin{example}
+%   |\drawmatrixset{bbox style={fill=blue!10}}|
+%    \drawmatrixset{bbox style={fill=blue!10}}
+%
+%   |\drawmatrix[bbox size=2, offset width=.5, offset height=.75]{A}|: 
+%    \drawmatrix[bbox size=2, offset width=.5, offset height=.75]{A}
+% \end{example}
+% 
+% \subsection{Position of the Label and Baseline}
+% By default, the label's |mid| is positioned at the bounding box's |center| and
+% its |base| is used as the whole drawing's baseline.
+% This is controlled by the keys
+% \DescribeMacro{label anchor} |label anchor=|\meta{anchor},
+% \DescribeMacro{label pos} |label pos=|\meta{position}, and
+% \DescribeMacro{baseline} |baseline=|\meta{position}. Here, \meta{position} has
+% to be an anchor of one of the following nodes: |bbox| (the bounding box),
+% |matrix| (the matrix itself), or |label| (the label).
+% \begin{example}
+%   |\drawmatrixset{bbox height=1, height=.5, bbox style={fill=blue!10}}|
+%    \drawmatrixset{bbox height=1, height=.5, bbox style={fill=blue!10}}
+%
+%   |\drawmatrix[label pos=bbox.south, label anchor=south]{A}|: 
+%    \drawmatrix[label pos=bbox.south, label anchor=south]{A}
+%
+%   |\drawmatrix[label pos=matrix.north west]{A}|: 
+%    \drawmatrix[label pos=matrix.north west]{A}
+%
+%   |\drawmatrix[baseline=label.north]{A}|: 
+%    \drawmatrix[baseline=label.north]{A}
+%
+%   |\drawmatrix[baseline=bbox.south]{A}|: 
+%    \drawmatrix[baseline=bbox.south]{A}
+% \end{example}
+%
+% \section{Changing Defaults}
+% Specifying \meta{options} with \DescribeMacro{\drawmatrixset}\marg{options}
+% applies them to all following |\drawmatrix|'s within the current scope.
+% \begin{example}
+%   |\drawmatrixset{height=.5, lower}|
+%    \drawmatrixset{height=.5, lower}  
+%
+%   |$\drawmatrix{A} \; \drawmatrix{B}$|:
+%    $\drawmatrix{A} \; \drawmatrix{B}$
+% \end{example}
+%
+% Furthermore, TikZ keys for the entire picture, the bounding box, the matrix
+% itself and the label can be set through the TikZ styles
+% \DescribeMacro{every drawmatrix bbox} |every drawmatrix bbox|,
+% \DescribeMacro{every drawmatrix} |every drawmatrix|, and
+% \DescribeMacro{every drawmatrix label} |every drawmatrix label|.
+% \begin{example}
+%    |\tikzset{every drawmatrix/.append style={draw=blue}}|
+%     \tikzset{every drawmatrix/.append style={draw=blue}} 
+%
+%    |$\drawmatrix{A} \; \drawmatrix{B}$|: 
+%     $\drawmatrix{A} \; \drawmatrix{B}$ 
+% \end{example}
+%
+%
+%^^A \StopEventually{
+%^^A   \PrintChanges
+%^^A   \PrintIndex
+%^^A }
+%
+% \section{Implementation}
+%
+% \DoNotIndex{\begin, \csname, \def, \edef, \else, \end, \endcsname,
+%   \expandafter, \fi, \filldraw, \ifmmode, \ifpgfmathunitsdeclared, \ifx, \let,
+%   \newcommand, \newif, \node, \path, \pgfkeys, \pgfkeyscurrentkeyRAW,
+%   \pgfkeyscurrentvalue, \pgfkeysnovalue, \pgfmathparse, \pgfmathresult,
+%   \RequirePackage, \tikzset, \undefined}
+%
+% This section describes the implementation details of the \textsf{drawmatrix}
+% package, stepping through the code line by line.
+%
+% \subsection{Tikz and Styles}
+%
+% The \textsf{tikz} package is used for drawing.
+%    \begin{macrocode}
+\RequirePackage{tikz}
+%    \end{macrocode}
+%
+% Declare the default style for matrices.
+%    \begin{macrocode}
+\tikzset{
+    every drawmatrix picture/.style={
+    },
+    every drawmatrix bbox/.style={
+        name=drawmatrix bbox,
+    },
+    every drawmatrix/.style={
+        fill=white,
+        draw=gray,
+    },
+    every drawmatrix label/.style={
+        name=drawmatrix label,
+        outer sep=0,
+        inner sep=0,
+    }
+}
+%    \end{macrocode}
+%
+% \subsection{String Constants and Ifs}
+%
+%    \begin{macrocode}
+\def\drawmatrix@rect{rect}
+\def\drawmatrix@lower{lower}
+\def\drawmatrix@upper{upper}
+\newif\ifdrawmatrix@banded
+\newif\ifdrawmatrix@mmode
+%    \end{macrocode}
+% 
+% \subsection{Key Declarations and Defaults}
+% 
+% Helper macro to extract sizes.
+%
+%    \begin{macrocode}
+\def\drawmatrix@setlength[#1]#2{%
+    \pgfmathparse{#2}%
+    \ifpgfmathunitsdeclared%
+        \expandafter\edef\csname drawmatrix@#1\endcsname%
+        {\pgfmathresult pt}%
+    \else%
+        \expandafter\edef\csname drawmatrix@#1\endcsname%
+        {\pgfmathresult cm}%
+    \fi%
+}
+%    \end{macrocode}
+%
+% Set up the path |/drawmatrix|.
+%
+%    \begin{macrocode}
+\pgfkeys{
+    drawmatris/.is family,
+    drawmatrix/.cd,
+%    \end{macrocode}
+%
+% The picture.
+%
+%    \begin{macrocode}
+    picture/.style={},
+    baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
+%    \end{macrocode}
+%
+% The bounding box.
+%
+%    \begin{macrocode}
+    bbox/.style={},
+    bbox style/.style={bbox/.append style={#1}},
+    bbox height/.code=\drawmatrix@setlength[bboxheight]{#1},
+    bbox width/.code=\drawmatrix@setlength[bboxwidth]{#1},
+    bbox size/.style={bbox height=#1, bbox width=#1},
+%    \end{macrocode}
+%
+% The offset from the bounding box.
+%
+%    \begin{macrocode}
+    offset height/.code=\drawmatrix@setlength[offsetheight]{#1},
+    offset width/.code=\drawmatrix@setlength[offsetwidth]{#1},
+    offset/.style={offset height=#1, offset width=#1},
+%    \end{macrocode}
+%
+% The matrix itself.
+%
+%    \begin{macrocode}
+    drawmatrix/.style={},
+    height/.code=\drawmatrix@setlength[height]{#1},
+    width/.code=\drawmatrix@setlength[width]{#1},
+    size/.style={height=#1, width=#1},
+%    \end{macrocode}
+%
+% The matrix shape.
+%
+%    \begin{macrocode}
+    shape/.store in=\drawmatrix@shape,
+    banded/.is if=drawmatrix@banded,
+    bandwidth/.code=\drawmatrix@setlength[bandwidth]{#1},
+    lower/.style={shape=lower},
+    upper/.style={shape=upper},
+%    \end{macrocode}
+%
+% Collect unknown keys in |/drawmatrix/drawmatrix|.
+%
+%    \begin{macrocode}
+    .unknown/.code={%
+        \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
+        \let\drawmatrix@currval\pgfkeyscurrentvalue%
+        \ifx#1\pgfkeysnovalue%
+            \pgfkeys{
+                /drawmatrix/drawmatrix/.append style/.expand once={
+                    \drawmatrix@currkey
+                }
+            }%
+        \else%
+            \pgfkeys{
+                /drawmatrix/drawmatrix/.append style/.expand twice={
+                    \expandafter\drawmatrix@currkey\expandafter=%
+                    \drawmatrix@currval
+                }
+            }%
+        \fi%
+    },
+%    \end{macrocode}
+%
+% The label.
+%
+%    \begin{macrocode}
+    label/.style={},
+    label pos/.style={label/.append style={at=(drawmatrix #1)}},
+    label anchor/.style={label/.append style={anchor=#1}},
+%    \end{macrocode}
+%
+% Finally, set the default keys.
+%
+%    \begin{macrocode}
+    baseline=label.base,
+    size=1, offset=0,
+    shape=rect, banded=false, bandwidth=.3,
+    label pos=bbox.center, label anchor=mid,
+}
+%    \end{macrocode}
+% 
+% \subsection{User Macros}
+%
+% |\drawmatrixset| as a simple shortcut like |\tikzset|.
+%
+%    \begin{macrocode} 
+\newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
+%    \end{macrocode} 
+%
+% Here we go, the main thing: |\drawmatrix|. First, we check if we are in math
+% mode and apply the options.
+%
+%    \begin{macrocode} 
+\newcommand\drawmatrix[2][]{{%
+    \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
+    \drawmatrixset{#1}%
+%    \end{macrocode} 
+%
+% Next, we compute minimum of width and height (for trapezoidal matrices),
+% ensure that banded matrices are square and set the default bounding box size.
+%
+%    \begin{macrocode} 
+    \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
+    \edef\drawmatrix@min{\pgfmathresult pt}%
+    \ifdrawmatrix@banded%
+        \let\drawmatrix@width\drawmatrix@min%
+        \let\drawmatrix@height\drawmatrix@min%
+    \fi%
+    \ifx\drawmatrix@bboxheight\undefined%
+        \pgfmathparse{\drawmatrix@height + \drawmatrix@offsetheight}%
+        \edef\drawmatrix@bboxheight{\pgfmathresult pt}%
+    \fi%
+    \ifx\drawmatrix@bboxwidth\undefined%
+        \pgfmathparse{\drawmatrix@width + \drawmatrix@offsetwidth}%
+        \edef\drawmatrix@bboxwidth{\pgfmathresult pt}%
+    \fi%
+%    \end{macrocode} 
+%
+% We begin with (drawing) the path for the bounding box.
+%
+%    \begin{macrocode} 
+    \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
+        \node[every drawmatrix bbox, /drawmatrix/bbox,
+            minimum height=\drawmatrix@bboxheight,
+            minimum width=\drawmatrix@bboxwidth] {};
+%    \end{macrocode} 
+%
+% For the matrix itself, we first declare all its corners and then draw it.
+%
+%    \begin{macrocode} 
+        \path (drawmatrix bbox.north west)
+            ++(\drawmatrix@offsetwidth, -\drawmatrix@offsetheight)
+            coordinate (drawmatrix north west)
+            +(\drawmatrix@width, 0)
+            coordinate (drawmatrix north east)
+            coordinate (drawmatrix north)
+            coordinate (drawmatrix east)
+            +(\drawmatrix@width, -\drawmatrix@height)
+            coordinate (drawmatrix south east)
+            +(0, -\drawmatrix@height)
+            coordinate (drawmatrix south west)
+            coordinate (drawmatrix south)
+            coordinate (drawmatrix west)
+        \ifdrawmatrix@banded
+            (drawmatrix north west)
+            +(\drawmatrix@bandwidth, 0) coordinate (drawmatrix north)
+            +(0, -\drawmatrix@bandwidth) coordinate (drawmatrix west)
+            (drawmatrix south east)
+            +(-\drawmatrix@bandwidth, 0) coordinate (drawmatrix south)
+            +(0, \drawmatrix@bandwidth) coordinate (drawmatrix east)
+        \fi
+        \ifx\drawmatrix@shape\drawmatrix@lower
+            (drawmatrix north east)
+            +(-\drawmatrix@min, 0) coordinate (drawmatrix north)
+            +(0, -\drawmatrix@min) coordinate (drawmatrix east)
+        \fi
+        \ifx\drawmatrix@shape\drawmatrix@upper
+            (drawmatrix south west)
+            +(\drawmatrix@min, 0) coordinate (drawmatrix south)
+            +(0, \drawmatrix@min) coordinate (drawmatrix west)
+        \fi
+            ;
+        \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
+            (drawmatrix north west)
+            -- (drawmatrix north)
+            -- (drawmatrix east)
+            -- (drawmatrix south east)
+            -- (drawmatrix south)
+            -- (drawmatrix west)
+            -- cycle;
+        \node[minimum height=\drawmatrix@height,
+            minimum width=\drawmatrix@width] (drawmatrix matrix) {};
+%    \end{macrocode} 
+%
+% The label.
+%
+%    \begin{macrocode} 
+        \node[every drawmatrix label, /drawmatrix/label] {%
+            \ifdrawmatrix@mmode$#2$\else#2\fi%
+        };
+    \end{tikzpicture}%
+}}
+%    \end{macrocode} 
+% \PrintIndex
+%
+% \Finale
+\endinput

@@ -1,0 +1,176 @@
+%%
+%% This is file `drawmatrix.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% drawmatrix.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright (C) 2014 by Elmar Peise
+%% 
+%% This file may be distributed and/or modified under the conditions of the LaTeX
+%% Project Public License, either version 1.2 of this license or (at your option)
+%% any later version.  The latest version of this license is an:
+%% 
+%%   http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.2 or later is part of all distributions of LaTeX version
+%% 1999/12/01 or later.
+%% 
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{drawmatrix}
+ [2014/02/23 v1.0 drawmatrix package]
+\RequirePackage{tikz}
+\tikzset{
+    every drawmatrix picture/.style={
+    },
+    every drawmatrix bbox/.style={
+        name=drawmatrix bbox,
+    },
+    every drawmatrix/.style={
+        fill=white,
+        draw=gray,
+    },
+    every drawmatrix label/.style={
+        name=drawmatrix label,
+        outer sep=0,
+        inner sep=0,
+    }
+}
+\def\drawmatrix@rect{rect}
+\def\drawmatrix@lower{lower}
+\def\drawmatrix@upper{upper}
+\newif\ifdrawmatrix@banded
+\newif\ifdrawmatrix@mmode
+\def\drawmatrix@setlength[#1]#2{%
+    \pgfmathparse{#2}%
+    \ifpgfmathunitsdeclared%
+        \expandafter\edef\csname drawmatrix@#1\endcsname%
+        {\pgfmathresult pt}%
+    \else%
+        \expandafter\edef\csname drawmatrix@#1\endcsname%
+        {\pgfmathresult cm}%
+    \fi%
+}
+\pgfkeys{
+    drawmatris/.is family,
+    drawmatrix/.cd,
+    picture/.style={},
+    baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
+    bbox/.style={},
+    bbox style/.style={bbox/.append style={#1}},
+    bbox height/.code=\drawmatrix@setlength[bboxheight]{#1},
+    bbox width/.code=\drawmatrix@setlength[bboxwidth]{#1},
+    bbox size/.style={bbox height=#1, bbox width=#1},
+    offset height/.code=\drawmatrix@setlength[offsetheight]{#1},
+    offset width/.code=\drawmatrix@setlength[offsetwidth]{#1},
+    offset/.style={offset height=#1, offset width=#1},
+    drawmatrix/.style={},
+    height/.code=\drawmatrix@setlength[height]{#1},
+    width/.code=\drawmatrix@setlength[width]{#1},
+    size/.style={height=#1, width=#1},
+    shape/.store in=\drawmatrix@shape,
+    banded/.is if=drawmatrix@banded,
+    bandwidth/.code=\drawmatrix@setlength[bandwidth]{#1},
+    lower/.style={shape=lower},
+    upper/.style={shape=upper},
+    .unknown/.code={%
+        \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
+        \let\drawmatrix@currval\pgfkeyscurrentvalue%
+        \ifx#1\pgfkeysnovalue%
+            \pgfkeys{
+                /drawmatrix/drawmatrix/.append style/.expand once={
+                    \drawmatrix@currkey
+                }
+            }%
+        \else%
+            \pgfkeys{
+                /drawmatrix/drawmatrix/.append style/.expand twice={
+                    \expandafter\drawmatrix@currkey\expandafter=%
+                    \drawmatrix@currval
+                }
+            }%
+        \fi%
+    },
+    label/.style={},
+    label pos/.style={label/.append style={at=(drawmatrix #1)}},
+    label anchor/.style={label/.append style={anchor=#1}},
+    baseline=label.base,
+    size=1, offset=0,
+    shape=rect, banded=false, bandwidth=.3,
+    label pos=bbox.center, label anchor=mid,
+}
+\newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
+\newcommand\drawmatrix[2][]{{%
+    \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
+    \drawmatrixset{#1}%
+    \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
+    \edef\drawmatrix@min{\pgfmathresult pt}%
+    \ifdrawmatrix@banded%
+        \let\drawmatrix@width\drawmatrix@min%
+        \let\drawmatrix@height\drawmatrix@min%
+    \fi%
+    \ifx\drawmatrix@bboxheight\undefined%
+        \pgfmathparse{\drawmatrix@height + \drawmatrix@offsetheight}%
+        \edef\drawmatrix@bboxheight{\pgfmathresult pt}%
+    \fi%
+    \ifx\drawmatrix@bboxwidth\undefined%
+        \pgfmathparse{\drawmatrix@width + \drawmatrix@offsetwidth}%
+        \edef\drawmatrix@bboxwidth{\pgfmathresult pt}%
+    \fi%
+    \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
+        \node[every drawmatrix bbox, /drawmatrix/bbox,
+            minimum height=\drawmatrix@bboxheight,
+            minimum width=\drawmatrix@bboxwidth] {};
+        \path (drawmatrix bbox.north west)
+            ++(\drawmatrix@offsetwidth, -\drawmatrix@offsetheight)
+            coordinate (drawmatrix north west)
+            +(\drawmatrix@width, 0)
+            coordinate (drawmatrix north east)
+            coordinate (drawmatrix north)
+            coordinate (drawmatrix east)
+            +(\drawmatrix@width, -\drawmatrix@height)
+            coordinate (drawmatrix south east)
+            +(0, -\drawmatrix@height)
+            coordinate (drawmatrix south west)
+            coordinate (drawmatrix south)
+            coordinate (drawmatrix west)
+        \ifdrawmatrix@banded
+            (drawmatrix north west)
+            +(\drawmatrix@bandwidth, 0) coordinate (drawmatrix north)
+            +(0, -\drawmatrix@bandwidth) coordinate (drawmatrix west)
+            (drawmatrix south east)
+            +(-\drawmatrix@bandwidth, 0) coordinate (drawmatrix south)
+            +(0, \drawmatrix@bandwidth) coordinate (drawmatrix east)
+        \fi
+        \ifx\drawmatrix@shape\drawmatrix@lower
+            (drawmatrix north east)
+            +(-\drawmatrix@min, 0) coordinate (drawmatrix north)
+            +(0, -\drawmatrix@min) coordinate (drawmatrix east)
+        \fi
+        \ifx\drawmatrix@shape\drawmatrix@upper
+            (drawmatrix south west)
+            +(\drawmatrix@min, 0) coordinate (drawmatrix south)
+            +(0, \drawmatrix@min) coordinate (drawmatrix west)
+        \fi
+            ;
+        \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
+            (drawmatrix north west)
+            -- (drawmatrix north)
+            -- (drawmatrix east)
+            -- (drawmatrix south east)
+            -- (drawmatrix south)
+            -- (drawmatrix west)
+            -- cycle;
+        \node[minimum height=\drawmatrix@height,
+            minimum width=\drawmatrix@width] (drawmatrix matrix) {};
+        \node[every drawmatrix label, /drawmatrix/label] {%
+            \ifdrawmatrix@mmode$#2$\else#2\fi%
+        };
+    \end{tikzpicture}%
+}}
+\endinput
+%%
+%% End of file `drawmatrix.sty'.
