@@ -17,7 +17,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
 %<package>\ProvidesPackage{drawmatrix}
-%<package> [2014/02/23 v1.0 drawmatrix package]
+%<package> [2014/09/08 v1.0.1 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -51,7 +51,9 @@
 %    Grave accent  \`     Left brace    \{     Vertical bar  \|
 %    Right brace   \}     Tilde         \~}
 %
-% \changes{v1.0}{2014/02/23}{Initial Version}
+% \changes{v1.0.0}{2014/02/23}{Initial Version}
+% \changes{v1.0.1}{2014/09/08}{Bugfix: Collapsible bbox (label placement for
+% vectors)}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -133,6 +135,11 @@
 % \begin{example}
 %   |\drawmatrix[height=.7, width=1cm + 10]{A}|: 
 %    \drawmatrix[height=.7, width=1cm + 10]{A}
+% \end{example}
+% A width or height of 0 result in vector representations:
+% \begin{example}
+%   |\drawmatrix[width=0]{A}|: 
+%    \drawmatrix[width=0]{A}
 % \end{example}
 %
 % \DescribeMacro{size} |size=|\meta{expr} sets both the width and height of the
@@ -303,6 +310,7 @@
     },
     every drawmatrix bbox/.style={
         name=drawmatrix bbox,
+        inner sep=0,
     },
     every drawmatrix/.style={
         fill=white,

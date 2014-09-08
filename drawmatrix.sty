@@ -21,13 +21,14 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
 \ProvidesPackage{drawmatrix}
- [2014/02/23 v1.0 drawmatrix package]
+ [2014/09/08 v1.0.1 drawmatrix package]
 \RequirePackage{tikz}
 \tikzset{
     every drawmatrix picture/.style={
     },
     every drawmatrix bbox/.style={
         name=drawmatrix bbox,
+        inner sep=0,
     },
     every drawmatrix/.style={
         fill=white,
