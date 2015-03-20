@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2014 by Elmar Peise
+% Copyright (C) 2015 by Elmar Peise
 % -----------------------------------------
 %
 % This file may be distributed and/or modified under the conditions of the
@@ -17,7 +17,7 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
 %<package>\ProvidesPackage{drawmatrix}
-%<package> [2014/09/08 v1.0.1 drawmatrix package]
+%<package> [2015/03/20 v1.0.2 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -54,6 +54,7 @@
 % \changes{v1.0.0}{2014/02/23}{Initial Version}
 % \changes{v1.0.1}{2014/09/08}{Bugfix: Collapsible bbox (label placement for
 % vectors)}
+% \changes{v1.0.2}{2015/03/20}{Bugfix: Bbox had a linewidth/2 offset}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -494,7 +495,8 @@
 %
 %    \begin{macrocode} 
         \path (drawmatrix bbox.north west)
-            ++(\drawmatrix@offsetwidth, -\drawmatrix@offsetheight)
+            ++(\drawmatrix@offsetwidth + .5\pgflinewidth,
+               -\drawmatrix@offsetheight - .5\pgflinewidth)
             coordinate (drawmatrix north west)
             +(\drawmatrix@width, 0)
             coordinate (drawmatrix north east)

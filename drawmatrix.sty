@@ -126,7 +126,8 @@
             minimum height=\drawmatrix@bboxheight,
             minimum width=\drawmatrix@bboxwidth] {};
         \path (drawmatrix bbox.north west)
-            ++(\drawmatrix@offsetwidth, -\drawmatrix@offsetheight)
+            ++(\drawmatrix@offsetwidth + .5\pgflinewidth,
+            -\drawmatrix@offsetheight - .5\pgflinewidth)
             coordinate (drawmatrix north west)
             +(\drawmatrix@width, 0)
             coordinate (drawmatrix north east)
