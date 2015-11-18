@@ -85,20 +85,20 @@
 % paper, on the blackboard, in documents, in presentations.  This package
 % provides simple, yet powerful tools to do so in \LaTeX.  For instance,
 % $$
-%   \drawmatrix[lower]{L} \;
-%   \drawmatrix[width=.5cm]{X} +
-%   \drawmatrix[width=.5]{X} \;
-%   \drawmatrix[upper, size=.5, bbox height=1]{U} =
-%   \drawmatrix[width=.5]{C}
+%   \drawmatrix[lower]L \;
+%   \drawmatrix[width=.5cm]X +
+%   \drawmatrix[width=.5]X \;
+%   \drawmatrix[upper, size=.5, bbox height=1]U =
+%   \drawmatrix[width=.5]C
 % $$
 % is typeset with this package as follows: 
 % \begin{verbatim}
 % $$
-%   \drawmatrix[lower]{L} \;
-%   \drawmatrix[width=.5]{X} +
-%   \drawmatrix[width=.5]{X} \;
-%   \drawmatrix[upper, size=.5, bbox height=1]{U} =
-%   \drawmatrix[width=.5]{C}
+%   \drawmatrix[lower]L \;
+%   \drawmatrix[width=.5]X +
+%   \drawmatrix[width=.5]X \;
+%   \drawmatrix[upper, size=.5, bbox height=1]U =
+%   \drawmatrix[width=.5]C
 % $$
 % \end{verbatim}
 %
@@ -112,14 +112,14 @@
 % The matrix is centered around its label, which is aligned with the surrounding
 % text.  The label is typeset in the surrounding mode and style.
 % \begin{example}
-%   |$\drawmatrix{A}$|:
-%    $\drawmatrix{A}$
+%   |$\drawmatrix A$|:
+%    $\drawmatrix A$
 %
-%   |{\bf \drawmatrix{A}}|:
-%    {\bf \drawmatrix{A}}
+%   |{\bf \drawmatrix A}|:
+%    {\bf \drawmatrix A}
 %
-%   |{\large \drawmatrix{A}}|:
-%    {\large \drawmatrix{A}}
+%   |{\large \drawmatrix A}|:
+%    {\large \drawmatrix A}
 % \end{example}
 % In equations, parentheses (spanned with |\left| and |\right|), subscripts, and
 % superscripts naturally extend to the drawn shape: $\left(\drawmatrix{A}_i +
@@ -134,13 +134,13 @@
 % \meta{expr} is evaluated by {\sc pgf}'s mathematical engine; if it contains no
 % units cm is implied, otherwise, all numbers without units are taken as in pt.
 % \begin{example}
-%   |\drawmatrix[height=.7, width=1cm + 10]{A}|: 
-%    \drawmatrix[height=.7, width=1cm + 10]{A}
+%   |\drawmatrix[height=.7, width=1cm + 10]A|: 
+%    \drawmatrix[height=.7, width=1cm + 10]A
 % \end{example}
 % A width or height of 0 result in vector representations:
 % \begin{example}
-%   |\drawmatrix[width=0]{A}|: 
-%    \drawmatrix[width=0]{A}
+%   |\drawmatrix[width=0]A|: 
+%    \drawmatrix[width=0]A
 % \end{example}
 %
 % \DescribeMacro{size} |size=|\meta{expr} sets both the width and height of the
@@ -152,11 +152,11 @@
 % \DescribeMacro{lower} |lower| and \DescribeMacro{upper} |upper|.  Hereby,
 % non-square matrices become trapezoidal.
 % \begin{example}
-%   |\drawmatrix[lower]{L}|: 
-%    \drawmatrix[lower]{L}
+%   |\drawmatrix[lower]L|: 
+%    \drawmatrix[lower]L
 %
-%   |\drawmatrix[upper, width=1.5]{U}|: 
-%    \drawmatrix[upper, width=1.5]{U}
+%   |\drawmatrix[upper, width=1.5]U|: 
+%    \drawmatrix[upper, width=1.5]U
 % \end{example}
 %
 % Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
@@ -167,15 +167,21 @@
 %   |\drawmatrix[banded]{B}|: 
 %    \drawmatrix[banded]{B}
 %
-%   |\drawmatrix[banded, bandwidth=.5]{B}|: 
-%    \drawmatrix[banded, bandwidth=.5]{B}
+%   |\drawmatrix[banded, bandwidth=.5]B|: 
+%    \drawmatrix[banded, bandwidth=.5]B
 % \end{example}
 %
 % |banded| can be combined with |lower| or |upper| to draw the intersection of
 % both shapes. However, banded matrices are always drawn as square.
 % \begin{example}
-%   |\drawmatrix[banded, lower]{L}|: 
-%    \drawmatrix[banded, lower]{L}
+%   |\drawmatrix[banded, lower]L|: 
+%    \drawmatrix[banded, lower]L
+% \end{example}
+%
+% \DescribeMacro{diag} is a shorthand for |banded| with |bandwidth=0|:
+% \begin{example}
+%   |\drawmatrix[diag]D|: 
+%    \drawmatrix[diag]D
 % \end{example}
 %
 % \subsection{Colors and Style}
@@ -185,11 +191,11 @@
 % recognized by this package are passed to the TikZ |\filldraw| command drawing
 % the matrix.
 % \begin{example}
-%   |\drawmatrix[fill=yellow, draw=blue]{A}|: 
-%    \drawmatrix[fill=yellow, draw=blue]{A}
+%   |\drawmatrix[fill=yellow, draw=blue]A|: 
+%    \drawmatrix[fill=yellow, draw=blue]A
 %
-%   |\drawmatrix[very thick, dashed]{A}|: 
-%    \drawmatrix[very thick, dashed]{A}
+%   |\drawmatrix[very thick, dashed]A|: 
+%    \drawmatrix[very thick, dashed]A
 % \end{example}
 % 
 % \subsection{The Bounding Box}
@@ -198,8 +204,8 @@
 % \DescribeMacro{bbox style} |bbox style=|\marg{style} is used;  this style
 % is applied to the TikZ |\node| that is the bounding box.
 % \begin{example}
-%   |\drawmatrix[lower, bbox style={fill=blue!10}]{L}|: 
-%    \drawmatrix[lower, bbox style={fill=blue!10}]{L}
+%   |\drawmatrix[lower, bbox style={fill=blue!10}]L|: 
+%    \drawmatrix[lower, bbox style={fill=blue!10}]L
 % \end{example}
 % 
 % By default, the bounding box is just large enough to contain the matrix. Its
@@ -214,8 +220,8 @@
 %   |\drawmatrixset{bbox style={fill=blue!10}}|
 %    \drawmatrixset{bbox style={fill=blue!10}}
 %
-%   |\drawmatrix[bbox width=2, bbox height=1.5]{A}|: 
-%    \drawmatrix[bbox width=2, bbox height=1.5]{A}
+%   |\drawmatrix[bbox width=2, bbox height=1.5]A|: 
+%    \drawmatrix[bbox width=2, bbox height=1.5]A
 % \end{example}
 % 
 % \sloppy The matrix can be positioned within its bounding box through
@@ -226,8 +232,8 @@
 %   |\drawmatrixset{bbox style={fill=blue!10}}|
 %    \drawmatrixset{bbox style={fill=blue!10}}
 %
-%   |\drawmatrix[bbox size=2, offset width=.5, offset height=.75]{A}|: 
-%    \drawmatrix[bbox size=2, offset width=.5, offset height=.75]{A}
+%   |\drawmatrix[bbox size=2, offset width=.5, offset height=.75]A|: 
+%    \drawmatrix[bbox size=2, offset width=.5, offset height=.75]A
 % \end{example}
 % 
 % \subsection{Position of the Label and Baseline}
@@ -243,17 +249,17 @@
 %   |\drawmatrixset{bbox height=1, height=.5, bbox style={fill=blue!10}}|
 %    \drawmatrixset{bbox height=1, height=.5, bbox style={fill=blue!10}}
 %
-%   |\drawmatrix[label pos=bbox.south, label anchor=south]{A}|: 
-%    \drawmatrix[label pos=bbox.south, label anchor=south]{A}
+%   |\drawmatrix[label pos=bbox.south, label anchor=south]A|: 
+%    \drawmatrix[label pos=bbox.south, label anchor=south]A
 %
-%   |\drawmatrix[label pos=matrix.north west]{A}|: 
-%    \drawmatrix[label pos=matrix.north west]{A}
+%   |\drawmatrix[label pos=matrix.north west]A|: 
+%    \drawmatrix[label pos=matrix.north west]A
 %
-%   |\drawmatrix[baseline=label.north]{A}|: 
-%    \drawmatrix[baseline=label.north]{A}
+%   |\drawmatrix[baseline=label.north]A|: 
+%    \drawmatrix[baseline=label.north]A
 %
-%   |\drawmatrix[baseline=bbox.south]{A}|: 
-%    \drawmatrix[baseline=bbox.south]{A}
+%   |\drawmatrix[baseline=bbox.south]A|: 
+%    \drawmatrix[baseline=bbox.south]A
 % \end{example}
 %
 % \section{Changing Defaults}
@@ -263,8 +269,8 @@
 %   |\drawmatrixset{height=.5, lower}|
 %    \drawmatrixset{height=.5, lower}  
 %
-%   |$\drawmatrix{A} \; \drawmatrix{B}$|:
-%    $\drawmatrix{A} \; \drawmatrix{B}$
+%   |$\drawmatrix A \; \drawmatrix B$|:
+%    $\drawmatrix A \; \drawmatrix B$
 % \end{example}
 %
 % Furthermore, TikZ keys for the entire picture, the bounding box, the matrix
@@ -276,8 +282,8 @@
 %    |\tikzset{every drawmatrix/.append style={draw=blue}}|
 %     \tikzset{every drawmatrix/.append style={draw=blue}} 
 %
-%    |$\drawmatrix{A} \; \drawmatrix{B}$|: 
-%     $\drawmatrix{A} \; \drawmatrix{B}$ 
+%    |$\drawmatrix A \; \drawmatrix B$|: 
+%     $\drawmatrix A \; \drawmatrix B$ 
 % \end{example}
 %
 %
