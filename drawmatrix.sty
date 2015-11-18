@@ -21,7 +21,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
 \ProvidesPackage{drawmatrix}
- [2014/09/08 v1.0.1 drawmatrix package]
+ [2015/11/18 v1.0.3 drawmatrix package]
 \RequirePackage{tikz}
 \tikzset{
     every drawmatrix picture/.style={
@@ -77,6 +77,7 @@
     bandwidth/.code=\drawmatrix@setlength[bandwidth]{#1},
     lower/.style={shape=lower},
     upper/.style={shape=upper},
+    diag/.style={banded, bandwidth=0},
     .unknown/.code={%
         \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
         \let\drawmatrix@currval\pgfkeyscurrentvalue%
@@ -127,7 +128,7 @@
             minimum width=\drawmatrix@bboxwidth] {};
         \path (drawmatrix bbox.north west)
             ++(\drawmatrix@offsetwidth + .5\pgflinewidth,
-            -\drawmatrix@offsetheight - .5\pgflinewidth)
+               -\drawmatrix@offsetheight - .5\pgflinewidth)
             coordinate (drawmatrix north west)
             +(\drawmatrix@width, 0)
             coordinate (drawmatrix north east)
