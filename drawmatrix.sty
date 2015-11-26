@@ -40,10 +40,8 @@
         inner sep=0,
     }
 }
-\def\drawmatrix@rect{rect}
-\def\drawmatrix@lower{lower}
-\def\drawmatrix@upper{upper}
-\newif\ifdrawmatrix@banded
+\newif\ifdrawmatrix@upperbanded
+\newif\ifdrawmatrix@lowerbanded
 \newif\ifdrawmatrix@mmode
 \def\drawmatrix@setlength[#1]#2{%
     \pgfmathparse{#2}%
@@ -72,12 +70,15 @@
     height/.code=\drawmatrix@setlength[height]{#1},
     width/.code=\drawmatrix@setlength[width]{#1},
     size/.style={height=#1, width=#1},
-    shape/.store in=\drawmatrix@shape,
-    banded/.is if=drawmatrix@banded,
-    bandwidth/.code=\drawmatrix@setlength[bandwidth]{#1},
-    lower/.style={shape=lower},
-    upper/.style={shape=upper},
-    diag/.style={banded, bandwidth=0},
+    lower banded/.is if=drawmatrix@lowerbanded,
+    upper banded/.is if=drawmatrix@upperbanded,
+    banded/.style={lower banded=#1, upper banded=#1},
+    lower bandwidth/.code=\drawmatrix@setlength[lowerbandwidth]{#1},
+    upper bandwidth/.code=\drawmatrix@setlength[upperbandwidth]{#1},
+    bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
+    lower/.style={upper banded, upper bandwidth=0},
+    upper/.style={lower banded, lower bandwidth=0},
+    diag/.style={lower, upper},
     .unknown/.code={%
         \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
         \let\drawmatrix@currval\pgfkeyscurrentvalue%
@@ -101,7 +102,7 @@
     label anchor/.style={label/.append style={anchor=#1}},
     baseline=label.base,
     size=1, offset=0,
-    shape=rect, banded=false, bandwidth=.3,
+    banded=false, bandwidth=.3,
     label pos=bbox.center, label anchor=mid,
 }
 \newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
@@ -109,11 +110,17 @@
     \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
     \drawmatrixset{#1}%
     \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
-    \edef\drawmatrix@min{\pgfmathresult pt}%
-    \ifdrawmatrix@banded%
-        \let\drawmatrix@width\drawmatrix@min%
-        \let\drawmatrix@height\drawmatrix@min%
+    \edef\drawmatrix@minsize{\pgfmathresult pt}%
+    \ifdrawmatrix@lowerbanded\else%
+        \edef\drawmatrix@lowerbandwidth{\drawmatrix@minsize}%
     \fi%
+    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@lowerbandwidth)}%
+    \edef\drawmatrix@lowerbandwidth{\pgfmathresult pt}%
+    \ifdrawmatrix@upperbanded\else%
+        \edef\drawmatrix@upperbandwidth{\drawmatrix@minsize}%
+    \fi%
+    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@upperbandwidth)}%
+    \edef\drawmatrix@upperbandwidth{\pgfmathresult pt}%
     \ifx\drawmatrix@bboxheight\undefined%
         \pgfmathparse{\drawmatrix@height + \drawmatrix@offsetheight}%
         \edef\drawmatrix@bboxheight{\pgfmathresult pt}%
@@ -132,32 +139,20 @@
             coordinate (drawmatrix north west)
             +(\drawmatrix@width, 0)
             coordinate (drawmatrix north east)
-            coordinate (drawmatrix north)
-            coordinate (drawmatrix east)
             +(\drawmatrix@width, -\drawmatrix@height)
             coordinate (drawmatrix south east)
             +(0, -\drawmatrix@height)
             coordinate (drawmatrix south west)
-            coordinate (drawmatrix south)
-            coordinate (drawmatrix west)
-        \ifdrawmatrix@banded
-            (drawmatrix north west)
-            +(\drawmatrix@bandwidth, 0) coordinate (drawmatrix north)
-            +(0, -\drawmatrix@bandwidth) coordinate (drawmatrix west)
-            (drawmatrix south east)
-            +(-\drawmatrix@bandwidth, 0) coordinate (drawmatrix south)
-            +(0, \drawmatrix@bandwidth) coordinate (drawmatrix east)
-        \fi
-        \ifx\drawmatrix@shape\drawmatrix@lower
             (drawmatrix north east)
-            +(-\drawmatrix@min, 0) coordinate (drawmatrix north)
-            +(0, -\drawmatrix@min) coordinate (drawmatrix east)
-        \fi
-        \ifx\drawmatrix@shape\drawmatrix@upper
+            +(-\drawmatrix@minsize + \drawmatrix@upperbandwidth, 0)
+            coordinate (drawmatrix north)
+            +(0, -\drawmatrix@minsize + \drawmatrix@upperbandwidth)
+            coordinate (drawmatrix east)
             (drawmatrix south west)
-            +(\drawmatrix@min, 0) coordinate (drawmatrix south)
-            +(0, \drawmatrix@min) coordinate (drawmatrix west)
-        \fi
+            +(\drawmatrix@minsize - \drawmatrix@lowerbandwidth, 0)
+            coordinate (drawmatrix south)
+            +(0, \drawmatrix@minsize - \drawmatrix@lowerbandwidth)
+            coordinate (drawmatrix west)
             ;
         \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)

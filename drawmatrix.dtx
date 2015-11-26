@@ -148,10 +148,12 @@
 % drawn matrix to \meta{expr}, resulting in a square matrix.
 %
 % \subsection{Shape}
-% By default matrices are rectangular.  Lower and upper triangular (and
-% trapezoidal) matrices are obtained by, respectively, setting the keys
-% \DescribeMacro{lower} |lower| and \DescribeMacro{upper} |upper|.  Hereby,
-% non-square matrices become trapezoidal.
+% By default matrices are rectangular.
+% \subsubsection{Triangular and Trapezoidal}
+% Lower and upper triangular (and trapezoidal) matrices are obtained by,
+% respectively, setting the keys \DescribeMacro{lower} |lower| and
+% \DescribeMacro{upper} |upper|.  Hereby, non-square matrices become
+% trapezoidal.
 % \begin{example}
 %   |\drawmatrix[lower]L|:
 %    \drawmatrix[lower]L
@@ -160,25 +162,53 @@
 %    \drawmatrix[upper, width=1.5]U
 % \end{example}
 %
+% \subsubsection{Banded matrices}
 % Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
 % The width, i.e. the horizontal/vertical extent from the diagonal, of the band
 % (default: 0.3cm) is specified through \DescribeMacro{bandwidth}
 % |bandwidth=|\meta{expr};
 % \begin{example}
-%   |\drawmatrix[banded]{B}|:
-%    \drawmatrix[banded]{B}
+%   |\drawmatrix[banded]B|:
+%    \drawmatrix[banded]B
 %
 %   |\drawmatrix[banded, bandwidth=.5]B|:
 %    \drawmatrix[banded, bandwidth=.5]B
 % \end{example}
 %
+% Banding for the lower and upper part of the matrices can be specified
+% separately through \DescribeMacro{lower banded} |lower banded| and
+% \DescribeMacro{upper banded} |upper banded|.  Separate bandwidths are set
+% through \DescribeMacro{lower bandwidth} |lower bandwidth=|\meta{expr} and
+% \DescribeMacro{upper bandwidth} |upper bandwidth=|\meta{expr}:
+% \begin{example}
+%   |\drawmatrix[lower banded]B|:
+%    \drawmatrix[lower banded]B
+%
+%   |\drawmatrix[banded, lower bandwidth=.5, upper bandwidth=.2]B|:
+%    \drawmatrix[banded, lower bandwidth=.5, upper bandwidth=.2]B
+% \end{example}
+%
+% Banding on rectangular matrices applies to the smaller of the two dimensions:
+% \begin{example}
+%   |\drawmatrix[banded, width=.8]B|:
+%    \drawmatrix[banded, width=.8]B
+%
+%   |\drawmatrix[upper banded, height=.7]B|:
+%    \drawmatrix[upper banded, height=.7]B
+% \end{example}
+%
 % |banded| can be combined with |lower| or |upper| to draw the intersection of
-% both shapes. However, banded matrices are always drawn as square.
+% both shapes.
 % \begin{example}
 %   |\drawmatrix[banded, lower]L|:
 %    \drawmatrix[banded, lower]L
 % \end{example}
 %
+% {\em Implementation detail}: |lower| (and |upper|) are implemented as
+% shorthands for |upper banded| with |upper bandwidth=0| (and |lower banded|
+% width |lower bandwidth=0|).
+%
+% \subsection{Diagonal matrices}
 % \DescribeMacro{diag} is a shorthand for |banded| with |bandwidth=0|:
 % \begin{example}
 %   |\drawmatrix[diag]D|:
@@ -268,7 +298,7 @@
 % applies them to all following |\drawmatrix|'s within the current scope.
 % \begin{example}
 %   |\drawmatrixset{height=.5, lower}|
-%    \drawmatrixset{height=.5, lower} 
+%    \drawmatrixset{height=.5, lower}
 %
 %   |$\drawmatrix A \; \drawmatrix B$|:
 %    $\drawmatrix A \; \drawmatrix B$
@@ -335,10 +365,8 @@
 % \subsection{String Constants and Ifs}
 %
 %    \begin{macrocode}
-\def\drawmatrix@rect{rect}
-\def\drawmatrix@lower{lower}
-\def\drawmatrix@upper{upper}
-\newif\ifdrawmatrix@banded
+\newif\ifdrawmatrix@upperbanded
+\newif\ifdrawmatrix@lowerbanded
 \newif\ifdrawmatrix@mmode
 %    \end{macrocode}
 %
@@ -392,7 +420,7 @@
     offset/.style={offset height=#1, offset width=#1},
 %    \end{macrocode}
 %
-% The matrix itself.
+% The matrix size.
 %
 %    \begin{macrocode}
     drawmatrix/.style={},
@@ -404,12 +432,15 @@
 % The matrix shape.
 %
 %    \begin{macrocode}
-    shape/.store in=\drawmatrix@shape,
-    banded/.is if=drawmatrix@banded,
-    bandwidth/.code=\drawmatrix@setlength[bandwidth]{#1},
-    lower/.style={shape=lower},
-    upper/.style={shape=upper},
-    diag/.style={banded, bandwidth=0},
+    lower banded/.is if=drawmatrix@lowerbanded,
+    upper banded/.is if=drawmatrix@upperbanded,
+    banded/.style={lower banded=#1, upper banded=#1},
+    lower bandwidth/.code=\drawmatrix@setlength[lowerbandwidth]{#1},
+    upper bandwidth/.code=\drawmatrix@setlength[upperbandwidth]{#1},
+    bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
+    lower/.style={upper banded, upper bandwidth=0},
+    upper/.style={lower banded, lower bandwidth=0},
+    diag/.style={lower, upper},
 %    \end{macrocode}
 %
 % Collect unknown keys in |/drawmatrix/drawmatrix|.
@@ -448,7 +479,7 @@
 %    \begin{macrocode}
     baseline=label.base,
     size=1, offset=0,
-    shape=rect, banded=false, bandwidth=.3,
+    banded=false, bandwidth=.3,
     label pos=bbox.center, label anchor=mid,
 }
 %    \end{macrocode}
@@ -470,16 +501,28 @@
     \drawmatrixset{#1}%
 %    \end{macrocode}
 %
-% Next, we compute minimum of width and height (for trapezoidal matrices),
-% ensure that banded matrices are square and set the default bounding box size.
+% Next, we prepare the band widths:  First, if the matrix is not banded, the
+% bandwidth is set to the smaller matrix dimension.  Then, the band width is
+% limited by this smaller dimension.
 %
 %    \begin{macrocode}
     \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
-    \edef\drawmatrix@min{\pgfmathresult pt}%
-    \ifdrawmatrix@banded%
-        \let\drawmatrix@width\drawmatrix@min%
-        \let\drawmatrix@height\drawmatrix@min%
+    \edef\drawmatrix@minsize{\pgfmathresult pt}%
+    \ifdrawmatrix@lowerbanded\else%
+        \edef\drawmatrix@lowerbandwidth{\drawmatrix@minsize}%
     \fi%
+    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@lowerbandwidth)}%
+    \edef\drawmatrix@lowerbandwidth{\pgfmathresult pt}%
+    \ifdrawmatrix@upperbanded\else%
+        \edef\drawmatrix@upperbandwidth{\drawmatrix@minsize}%
+    \fi%
+    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@upperbandwidth)}%
+    \edef\drawmatrix@upperbandwidth{\pgfmathresult pt}%
+%    \end{macrocode}
+%
+% Next, we set the default bounding box size.
+%
+%    \begin{macrocode}
     \ifx\drawmatrix@bboxheight\undefined%
         \pgfmathparse{\drawmatrix@height + \drawmatrix@offsetheight}%
         \edef\drawmatrix@bboxheight{\pgfmathresult pt}%
@@ -508,32 +551,20 @@
             coordinate (drawmatrix north west)
             +(\drawmatrix@width, 0)
             coordinate (drawmatrix north east)
-            coordinate (drawmatrix north)
-            coordinate (drawmatrix east)
             +(\drawmatrix@width, -\drawmatrix@height)
             coordinate (drawmatrix south east)
             +(0, -\drawmatrix@height)
             coordinate (drawmatrix south west)
-            coordinate (drawmatrix south)
-            coordinate (drawmatrix west)
-        \ifdrawmatrix@banded
-            (drawmatrix north west)
-            +(\drawmatrix@bandwidth, 0) coordinate (drawmatrix north)
-            +(0, -\drawmatrix@bandwidth) coordinate (drawmatrix west)
-            (drawmatrix south east)
-            +(-\drawmatrix@bandwidth, 0) coordinate (drawmatrix south)
-            +(0, \drawmatrix@bandwidth) coordinate (drawmatrix east)
-        \fi
-        \ifx\drawmatrix@shape\drawmatrix@lower
             (drawmatrix north east)
-            +(-\drawmatrix@min, 0) coordinate (drawmatrix north)
-            +(0, -\drawmatrix@min) coordinate (drawmatrix east)
-        \fi
-        \ifx\drawmatrix@shape\drawmatrix@upper
+            +(-\drawmatrix@minsize + \drawmatrix@upperbandwidth, 0)
+            coordinate (drawmatrix north)
+            +(0, -\drawmatrix@minsize + \drawmatrix@upperbandwidth)
+            coordinate (drawmatrix east)
             (drawmatrix south west)
-            +(\drawmatrix@min, 0) coordinate (drawmatrix south)
-            +(0, \drawmatrix@min) coordinate (drawmatrix west)
-        \fi
+            +(\drawmatrix@minsize - \drawmatrix@lowerbandwidth, 0)
+            coordinate (drawmatrix south)
+            +(0, \drawmatrix@minsize - \drawmatrix@lowerbandwidth)
+            coordinate (drawmatrix west)
             ;
         \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
