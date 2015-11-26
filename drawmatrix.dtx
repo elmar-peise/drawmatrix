@@ -149,7 +149,7 @@
 %
 % \subsection{Shape}
 % By default matrices are rectangular.
-% \subsubsection{Triangular and Trapezoidal}
+% \subsubsection{Triangular and Trapezoidal Matrices}
 % Lower and upper triangular (and trapezoidal) matrices are obtained by,
 % respectively, setting the keys \DescribeMacro{lower} |lower| and
 % \DescribeMacro{upper} |upper|.  Hereby, non-square matrices become
@@ -162,7 +162,7 @@
 %    \drawmatrix[upper, width=1.5]U
 % \end{example}
 %
-% \subsubsection{Banded matrices}
+% \subsubsection{Banded Matrices}
 % Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
 % The width, i.e. the horizontal/vertical extent from the diagonal, of the band
 % (default: 0.3cm) is specified through \DescribeMacro{bandwidth}
@@ -204,12 +204,8 @@
 %    \drawmatrix[banded, lower]L
 % \end{example}
 %
-% {\em Implementation detail}: |lower| (and |upper|) are implemented as
-% shorthands for |upper banded| with |upper bandwidth=0| (and |lower banded|
-% width |lower bandwidth=0|).
-%
-% \subsection{Diagonal matrices}
-% \DescribeMacro{diag} is a shorthand for |banded| with |bandwidth=0|:
+% \subsubsection{Diagonal Matrices}
+% \DescribeMacro{diag} |diag| is a shorthand for |banded| with |bandwidth=0|:
 % \begin{example}
 %   |\drawmatrix[diag]D|:
 %    \drawmatrix[diag]D
@@ -294,8 +290,9 @@
 % \end{example}
 %
 % \section{Changing Defaults}
-% Specifying \meta{options} with \DescribeMacro{\drawmatrixset}\marg{options}
-% applies them to all following |\drawmatrix|'s within the current scope.
+% Specifying \meta{options} with \DescribeMacro{\drawmatrixset}
+% |\drawmatrixset|\marg{options} applies them to all following |\drawmatrix|'s
+% within the current scope.
 % \begin{example}
 %   |\drawmatrixset{height=.5, lower}|
 %    \drawmatrixset{height=.5, lower}
@@ -310,11 +307,24 @@
 % \DescribeMacro{every drawmatrix} |every drawmatrix|, and
 % \DescribeMacro{every drawmatrix label} |every drawmatrix label|.
 % \begin{example}
-%    |\tikzset{every drawmatrix/.append style={draw=blue}}|
-%     \tikzset{every drawmatrix/.append style={draw=blue}}
+%    |\tikzset{every drawmatrix/.append style={draw=blue, rounded corners=5pt}}|
+%     \tikzset{every drawmatrix/.append style={draw=blue, rounded corners=5pt}}
 %
 %    |$\drawmatrix A \; \drawmatrix B$|:
 %     $\drawmatrix A \; \drawmatrix B$
+% \end{example}
+%
+% \section{Externalization}
+% |\drawmatrix| behaves as any other TikZ picture, therefore when
+% externalization is enabled, all matrix visualizations are also externalized.
+% However, since there are usually many |\drawmatrix| pictures, each of which is
+% very small and fast to produce, their externalization would mean a tremendous
+% overhead.  To avoid this overhead without explicitly dis- and re-enabling
+% externalization throughout the document, \DescribeMacro{externalize}
+% |externalize=false| disables externalization for all |\drawmatrix| pictures:
+% \begin{example}
+%   |\drawmatrixset{externalize=false}|
+%    \drawmatrixset{externalize=false}
 % \end{example}
 %
 %
@@ -325,11 +335,20 @@
 %
 % \section{Implementation}
 %
-% \DoNotIndex{\begin, \csname, \def, \edef, \else, \end, \endcsname,
-%   \expandafter, \fi, \filldraw, \ifmmode, \ifpgfmathunitsdeclared, \ifx, \let,
-%   \newcommand, \newif, \node, \path, \pgfkeys, \pgfkeyscurrentkeyRAW,
-%   \pgfkeyscurrentvalue, \pgfkeysnovalue, \pgfmathparse, \pgfmathresult,
-%   \RequirePackage, \tikzset, \undefined}
+% \DoNotIndex{
+%   \RequirePackage, \begin, \csname, \def, \drawmatrix@bboxheight,
+%   \drawmatrix@bboxwidth, \drawmatrix@currkey, \drawmatrix@currval,
+%   \drawmatrix@height, \drawmatrix@lowerbandwidth, \drawmatrix@minsize,
+%   \drawmatrix@mmodefalse, \drawmatrix@mmodetrue, \drawmatrix@offsetheight,
+%   \drawmatrix@offsetwidth, \drawmatrix@setlength, \drawmatrix@upperbandwidth,
+%   \drawmatrix@width, \edef, \else, \end, \endcsname, \expandafter, \fi,
+%   \filldraw, \ifdrawmatrix@externalize, \ifdrawmatrix@lowerbanded,
+%   \ifdrawmatrix@mmode, \ifdrawmatrix@upperbanded, \ifmmode,
+%   \ifpgfmathunitsdeclared, \ifx, \let, \newcommand, \newif, \node, \path,
+%   \pgfkeys, \pgfkeyscurrentkeyRAW, \pgfkeyscurrentvalue, \pgfkeysnovalue,
+%   \pgflinewidth, \pgfmathparse, \pgfmathresult, \tikz@library@external@loaded,
+%   \tikzset, \undefined,
+% }
 %
 % This section describes the implementation details of the \textsf{drawmatrix}
 % package, stepping through the code line by line.
@@ -368,6 +387,7 @@
 \newif\ifdrawmatrix@upperbanded
 \newif\ifdrawmatrix@lowerbanded
 \newif\ifdrawmatrix@mmode
+\newif\ifdrawmatrix@externalize
 %    \end{macrocode}
 %
 % \subsection{Key Declarations and Defaults}
@@ -391,7 +411,7 @@
 %
 %    \begin{macrocode}
 \pgfkeys{
-    drawmatris/.is family,
+    drawmatrix/.is family,
     drawmatrix/.cd,
 %    \end{macrocode}
 %
@@ -443,6 +463,12 @@
     diag/.style={lower, upper},
 %    \end{macrocode}
 %
+% Externalization control.
+%
+%    \begin{macrocode}
+    externalize/.is if=drawmatrix@externalize,
+%    \end{macrocode}
+%
 % Collect unknown keys in |/drawmatrix/drawmatrix|.
 %
 %    \begin{macrocode}
@@ -481,6 +507,7 @@
     size=1, offset=0,
     banded=false, bandwidth=.3,
     label pos=bbox.center, label anchor=mid,
+    externalize=true,
 }
 %    \end{macrocode}
 %
@@ -488,22 +515,35 @@
 %
 % |\drawmatrixset| as a simple shortcut like |\tikzset|.
 %
+% \begin{macro}{\drawmatrixset}
 %    \begin{macrocode}
 \newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
 %    \end{macrocode}
+% \end{macro}
 %
 % Here we go, the main thing: |\drawmatrix|. First, we check if we are in math
 % mode and apply the options.
 %
+% \begin{macro}{\drawmatrix}
 %    \begin{macrocode}
 \newcommand\drawmatrix[2][]{{%
     \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
     \drawmatrixset{#1}%
 %    \end{macrocode}
 %
-% Next, we prepare the band widths:  First, if the matrix is not banded, the
-% bandwidth is set to the smaller matrix dimension.  Then, the band width is
-% limited by this smaller dimension.
+% Disable externalization if |externalize=false|.
+%
+%    \begin{macrocode}
+    \ifdrawmatrix@externalize\else%
+        \ifx\tikz@library@external@loaded\undefined\else%
+            \tikzset{external/export=false}%
+        \fi%
+    \fi%
+%    \end{macrocode}
+%
+% Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
+    % set to the smaller matrix dimension.  Then, the band width is limited by
+    % this smaller dimension.
 %
 %    \begin{macrocode}
     \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
@@ -520,7 +560,7 @@
     \edef\drawmatrix@upperbandwidth{\pgfmathresult pt}%
 %    \end{macrocode}
 %
-% Next, we set the default bounding box size.
+% Set the default bounding box size.
 %
 %    \begin{macrocode}
     \ifx\drawmatrix@bboxheight\undefined%
@@ -533,7 +573,7 @@
     \fi%
 %    \end{macrocode}
 %
-% We begin with (drawing) the path for the bounding box.
+% Begin with (drawing) the path for the bounding box.
 %
 %    \begin{macrocode}
     \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
@@ -569,10 +609,10 @@
         \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             -- (drawmatrix north)
-            -- (drawmatrix east)
+            \ifdrawmatrix@upperbanded-- (drawmatrix east)\fi
             -- (drawmatrix south east)
             -- (drawmatrix south)
-            -- (drawmatrix west)
+            \ifdrawmatrix@lowerbanded-- (drawmatrix west)\fi
             -- cycle;
         \node[minimum height=\drawmatrix@height,
             minimum width=\drawmatrix@width] (drawmatrix matrix) {};
@@ -587,6 +627,8 @@
     \end{tikzpicture}%
 }}
 %    \end{macrocode}
+% \end{macro}
+%
 % \PrintIndex
 %
 % \Finale
