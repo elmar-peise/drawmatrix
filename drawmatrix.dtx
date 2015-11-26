@@ -57,7 +57,7 @@
 % \changes{v1.0.2}{2015/03/20}{Bugfix: Bbox had a linewidth/2 offset}
 % \changes{v1.0.3}{2015/11/18}{Introduced |diag| option}
 % \changes{v1.1.0}{2015/11/26}{Separate lower and upper banding, externalization
-% control}
+% control, fixed matrix style collection}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -474,20 +474,21 @@
 % Collect unknown keys in |/drawmatrix/drawmatrix|.
 %
 %    \begin{macrocode}
+    drawmatrix/.style={},
     .unknown/.code={%
-        \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
+        \let\drawmatrix@currname\pgfkeyscurrentname%
         \let\drawmatrix@currval\pgfkeyscurrentvalue%
         \ifx#1\pgfkeysnovalue%
-            \pgfkeys{
-                /drawmatrix/drawmatrix/.append style/.expand once={
-                    \drawmatrix@currkey
+            \pgfqkeys{/drawmatrix}{
+                drawmatrix/.append style/.expand once={%
+                    \drawmatrix@currname%
                 }
             }%
         \else%
-            \pgfkeys{
-                /drawmatrix/drawmatrix/.append style/.expand twice={
-                    \expandafter\drawmatrix@currkey\expandafter=%
-                    \drawmatrix@currval
+            \pgfqkeys{/drawmatrix}{
+                drawmatrix/.append style/.expand twice={%
+                    \expandafter\drawmatrix@currname\expandafter=%
+                    \drawmatrix@currval%
                 }
             }%
         \fi%
@@ -519,7 +520,7 @@
 %
 % \begin{macro}{\drawmatrixset}
 %    \begin{macrocode}
-\newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
+\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 %    \end{macrocode}
 % \end{macro}
 %

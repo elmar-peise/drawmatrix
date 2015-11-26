@@ -81,20 +81,21 @@
     upper/.style={lower banded, lower bandwidth=0},
     diag/.style={lower, upper},
     externalize/.is if=drawmatrix@externalize,
+    drawmatrix/.style={},
     .unknown/.code={%
-        \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
+        \let\drawmatrix@currname\pgfkeyscurrentname%
         \let\drawmatrix@currval\pgfkeyscurrentvalue%
         \ifx#1\pgfkeysnovalue%
-            \pgfkeys{
-                /drawmatrix/drawmatrix/.append style/.expand once={
-                    \drawmatrix@currkey
+            \pgfqkeys{/drawmatrix}{
+                drawmatrix/.append style/.expand once={%
+                    \drawmatrix@currname%
                 }
             }%
         \else%
-            \pgfkeys{
-                /drawmatrix/drawmatrix/.append style/.expand twice={
-                    \expandafter\drawmatrix@currkey\expandafter=%
-                    \drawmatrix@currval
+            \pgfqkeys{/drawmatrix}{
+                drawmatrix/.append style/.expand twice={%
+                    \expandafter\drawmatrix@currname\expandafter=%
+                    \drawmatrix@currval%
                 }
             }%
         \fi%
@@ -108,7 +109,7 @@
     label pos=bbox.center, label anchor=mid,
     externalize=true,
 }
-\newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
+\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
     \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
     \drawmatrixset{#1}%
