@@ -21,7 +21,7 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
 \ProvidesPackage{drawmatrix}
- [2015/11/18 v1.0.3 drawmatrix package]
+ [2015/11/26 v1.1.0 drawmatrix package]
 \RequirePackage{tikz}
 \tikzset{
     every drawmatrix picture/.style={
@@ -43,6 +43,7 @@
 \newif\ifdrawmatrix@upperbanded
 \newif\ifdrawmatrix@lowerbanded
 \newif\ifdrawmatrix@mmode
+\newif\ifdrawmatrix@externalize
 \def\drawmatrix@setlength[#1]#2{%
     \pgfmathparse{#2}%
     \ifpgfmathunitsdeclared%
@@ -54,7 +55,7 @@
     \fi%
 }
 \pgfkeys{
-    drawmatris/.is family,
+    drawmatrix/.is family,
     drawmatrix/.cd,
     picture/.style={},
     baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
@@ -79,6 +80,7 @@
     lower/.style={upper banded, upper bandwidth=0},
     upper/.style={lower banded, lower bandwidth=0},
     diag/.style={lower, upper},
+    externalize/.is if=drawmatrix@externalize,
     .unknown/.code={%
         \let\drawmatrix@currkey\pgfkeyscurrentkeyRAW%
         \let\drawmatrix@currval\pgfkeyscurrentvalue%
@@ -104,11 +106,19 @@
     size=1, offset=0,
     banded=false, bandwidth=.3,
     label pos=bbox.center, label anchor=mid,
+    externalize=true,
 }
 \newcommand\drawmatrixset[1]{\pgfkeys{drawmatrix/.cd, #1}}
 \newcommand\drawmatrix[2][]{{%
     \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
     \drawmatrixset{#1}%
+    \ifdrawmatrix@externalize\else%
+        \ifx\tikz@library@external@loaded\undefined\else%
+            \tikzset{external/export=false}%
+        \fi%
+    \fi%
+    % set to the smaller matrix dimension.  Then, the band width is limited by
+    % this smaller dimension.
     \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
     \edef\drawmatrix@minsize{\pgfmathresult pt}%
     \ifdrawmatrix@lowerbanded\else%
@@ -157,10 +167,10 @@
         \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             -- (drawmatrix north)
-            -- (drawmatrix east)
+            \ifdrawmatrix@upperbanded-- (drawmatrix east)\fi
             -- (drawmatrix south east)
             -- (drawmatrix south)
-            -- (drawmatrix west)
+            \ifdrawmatrix@lowerbanded-- (drawmatrix west)\fi
             -- cycle;
         \node[minimum height=\drawmatrix@height,
             minimum width=\drawmatrix@width] (drawmatrix matrix) {};
