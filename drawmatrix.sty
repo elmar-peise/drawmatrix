@@ -24,8 +24,7 @@
  [2015/11/26 v1.1.0 drawmatrix package]
 \RequirePackage{tikz}
 \tikzset{
-    every drawmatrix picture/.style={
-    },
+    every drawmatrix picture/.style={},
     every drawmatrix bbox/.style={
         name=drawmatrix bbox,
         inner sep=0,
@@ -40,20 +39,7 @@
         inner sep=0,
     }
 }
-\newif\ifdrawmatrix@upperbanded
-\newif\ifdrawmatrix@lowerbanded
-\newif\ifdrawmatrix@mmode
 \newif\ifdrawmatrix@externalize
-\def\drawmatrix@setlength[#1]#2{%
-    \pgfmathparse{#2}%
-    \ifpgfmathunitsdeclared%
-        \expandafter\edef\csname drawmatrix@#1\endcsname%
-        {\pgfmathresult pt}%
-    \else%
-        \expandafter\edef\csname drawmatrix@#1\endcsname%
-        {\pgfmathresult cm}%
-    \fi%
-}
 \pgfkeys{
     drawmatrix/.is family,
     drawmatrix/.cd,
@@ -61,123 +47,101 @@
     baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
     bbox/.style={},
     bbox style/.style={bbox/.append style={#1}},
-    bbox height/.code=\drawmatrix@setlength[bboxheight]{#1},
-    bbox width/.code=\drawmatrix@setlength[bboxwidth]{#1},
+    bbox height/.initial,
+    bbox width/.initial,
     bbox size/.style={bbox height=#1, bbox width=#1},
-    offset height/.code=\drawmatrix@setlength[offsetheight]{#1},
-    offset width/.code=\drawmatrix@setlength[offsetwidth]{#1},
+    offset height/.initial=0,
+    offset width/.initial=0,
     offset/.style={offset height=#1, offset width=#1},
-    drawmatrix/.style={},
-    height/.code=\drawmatrix@setlength[height]{#1},
-    width/.code=\drawmatrix@setlength[width]{#1},
+    height/.initial=1,
+    width/.initial=1,
     size/.style={height=#1, width=#1},
-    lower banded/.is if=drawmatrix@lowerbanded,
-    upper banded/.is if=drawmatrix@upperbanded,
-    banded/.style={lower banded=#1, upper banded=#1},
-    lower bandwidth/.code=\drawmatrix@setlength[lowerbandwidth]{#1},
-    upper bandwidth/.code=\drawmatrix@setlength[upperbandwidth]{#1},
+    lower bandwidth/.initial,
+    upper bandwidth/.initial,
     bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
-    lower/.style={upper banded, upper bandwidth=0},
-    upper/.style={lower banded, lower bandwidth=0},
+    lower banded/.style={lower bandwidth=.3},
+    upper banded/.style={upper bandwidth=.3},
+    banded/.style={lower banded, upper banded},
+    lower/.style={upper bandwidth=0},
+    upper/.style={lower bandwidth=0},
     diag/.style={lower, upper},
     externalize/.is if=drawmatrix@externalize,
     drawmatrix/.style={},
     .unknown/.code={%
-        \let\drawmatrix@currname\pgfkeyscurrentname%
-        \let\drawmatrix@currval\pgfkeyscurrentvalue%
-        \ifx#1\pgfkeysnovalue%
-            \pgfqkeys{/drawmatrix}{
-                drawmatrix/.append style/.expand once={%
-                    \drawmatrix@currname%
-                }
-            }%
-        \else%
-            \pgfqkeys{/drawmatrix}{
-                drawmatrix/.append style/.expand twice={%
-                    \expandafter\drawmatrix@currname\expandafter=%
-                    \drawmatrix@currval%
-                }
-            }%
-        \fi%
+        \let\@currname\pgfkeyscurrentname%
+        \let\@currval\pgfkeyscurrentvalue%
+        \ifx#1\pgfkeysnovalue\pgfqkeys{/drawmatrix}{
+            drawmatrix/.append style/.expand once={\@currname}
+        }\else\pgfqkeys{/drawmatrix}{
+            drawmatrix/.append style/.expand twice={%
+                \expandafter\@currname\expandafter=\@currval%
+            }
+        }\fi%
     },
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
     label anchor/.style={label/.append style={anchor=#1}},
     baseline=label.base,
-    size=1, offset=0,
-    banded=false, bandwidth=.3,
-    label pos=bbox.center, label anchor=mid,
+    label pos=bbox.center,
+    label anchor=mid,
     externalize=true,
 }
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
-    \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
+    \ifmmode\edef\@labeltext{$#2$}\else\edef\@labeltext{#2}\fi%
     \drawmatrixset{#1}%
     \ifdrawmatrix@externalize\else%
         \ifx\tikz@library@external@loaded\undefined\else%
             \tikzset{external/export=false}%
         \fi%
     \fi%
-    % set to the smaller matrix dimension.  Then, the band width is limited by
-    % this smaller dimension.
-    \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
-    \edef\drawmatrix@minsize{\pgfmathresult pt}%
-    \ifdrawmatrix@lowerbanded\else%
-        \edef\drawmatrix@lowerbandwidth{\drawmatrix@minsize}%
+    \pgfqkeys{/drawmatrix}{
+        height/.get=\@height,
+        width/.get=\@width,
+        lower bandwidth/.get=\@lowerbandwidth,
+        upper bandwidth/.get=\@upperbandwidth,
+        offset height/.get=\@offsetheight,
+        offset width/.get=\@offsetwidth,
+        bbox height/.get=\@bboxheight,
+        bbox width/.get=\@bboxwidth,
+    }%
+    \pgfmathsetmacro\@minsize{min(\@width, \@height)}%
+    \def\@novalue{\pgfkeysnovalue}%
+    \ifx\@lowerbandwidth\@novalue\edef\@lowerbandwidth{\@minsize}\fi%
+    \ifx\@upperbandwidth\@novalue\edef\@upperbandwidth{\@minsize}\fi%
+    \pgfmathsetmacro\@lowerbandwidth{min(\@minsize, \@lowerbandwidth)}%
+    \pgfmathsetmacro\@upperbandwidth{min(\@minsize, \@upperbandwidth)}%
+    \ifx\@bboxheight\@novalue%
+        \pgfmathsetmacro\@bboxheight{\@height + \@offsetheight}%
     \fi%
-    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@lowerbandwidth)}%
-    \edef\drawmatrix@lowerbandwidth{\pgfmathresult pt}%
-    \ifdrawmatrix@upperbanded\else%
-        \edef\drawmatrix@upperbandwidth{\drawmatrix@minsize}%
-    \fi%
-    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@upperbandwidth)}%
-    \edef\drawmatrix@upperbandwidth{\pgfmathresult pt}%
-    \ifx\drawmatrix@bboxheight\undefined%
-        \pgfmathparse{\drawmatrix@height + \drawmatrix@offsetheight}%
-        \edef\drawmatrix@bboxheight{\pgfmathresult pt}%
-    \fi%
-    \ifx\drawmatrix@bboxwidth\undefined%
-        \pgfmathparse{\drawmatrix@width + \drawmatrix@offsetwidth}%
-        \edef\drawmatrix@bboxwidth{\pgfmathresult pt}%
+    \ifx\@bboxwidth\@novalue%
+        \pgfmathsetmacro\@bboxwidth{\@width + \@offsetwidth}%
     \fi%
     \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
         \node[every drawmatrix bbox, /drawmatrix/bbox,
-            minimum height=\drawmatrix@bboxheight,
-            minimum width=\drawmatrix@bboxwidth] {};
+            minimum height=\@bboxheight cm, minimum width=\@bboxwidth cm] {};
         \path (drawmatrix bbox.north west)
-            ++(\drawmatrix@offsetwidth + .5\pgflinewidth,
-               -\drawmatrix@offsetheight - .5\pgflinewidth)
+            ++(\@offsetwidth, -\@offsetheight)
+            ++(.5\pgflinewidth, -.5\pgflinewidth)
             coordinate (drawmatrix north west)
-            +(\drawmatrix@width, 0)
-            coordinate (drawmatrix north east)
-            +(\drawmatrix@width, -\drawmatrix@height)
-            coordinate (drawmatrix south east)
-            +(0, -\drawmatrix@height)
-            coordinate (drawmatrix south west)
-            (drawmatrix north east)
-            +(-\drawmatrix@minsize + \drawmatrix@upperbandwidth, 0)
-            coordinate (drawmatrix north)
-            +(0, -\drawmatrix@minsize + \drawmatrix@upperbandwidth)
-            coordinate (drawmatrix east)
-            (drawmatrix south west)
-            +(\drawmatrix@minsize - \drawmatrix@lowerbandwidth, 0)
-            coordinate (drawmatrix south)
-            +(0, \drawmatrix@minsize - \drawmatrix@lowerbandwidth)
-            coordinate (drawmatrix west)
-            ;
+            ++(\@width, 0) coordinate (drawmatrix north east)
+            +(-\@minsize + \@upperbandwidth, 0) coordinate (drawmatrix north)
+            +(0, -\@minsize + \@upperbandwidth) coordinate (drawmatrix east)
+            ++(0, -\@height) coordinate (drawmatrix south east)
+            ++(-\@width, 0) coordinate (drawmatrix south west)
+            +(\@minsize - \@lowerbandwidth, 0) coordinate (drawmatrix south)
+            +(0, \@minsize - \@lowerbandwidth) coordinate (drawmatrix west);
         \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             -- (drawmatrix north)
-            \ifdrawmatrix@upperbanded-- (drawmatrix east)\fi
+            \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
             -- (drawmatrix south east)
             -- (drawmatrix south)
-            \ifdrawmatrix@lowerbanded-- (drawmatrix west)\fi
+            \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
             -- cycle;
-        \node[minimum height=\drawmatrix@height,
-            minimum width=\drawmatrix@width] (drawmatrix matrix) {};
-        \node[every drawmatrix label, /drawmatrix/label] {%
-            \ifdrawmatrix@mmode$#2$\else#2\fi%
-        };
+        \node[minimum height=\@height cm, minimum width=\@width cm]
+            (drawmatrix matrix) {};
+        \node[every drawmatrix label, /drawmatrix/label] {\@labeltext};
     \end{tikzpicture}%
 }}
 \endinput

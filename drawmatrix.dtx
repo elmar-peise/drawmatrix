@@ -89,7 +89,7 @@
 % provides simple, yet powerful tools to do so in \LaTeX.  For instance,
 % $$
 %   \drawmatrix[upper]A \;
-%   \drawmatrix[width=.5cm]X +
+%   \drawmatrix[width=.5]X +
 %   \drawmatrix[width=.5]X \;
 %   \drawmatrix[upper, size=.5, bbox height=1]B =
 %   \drawmatrix[width=.5]C
@@ -131,15 +131,9 @@
 % natural result: $\drawmatrix{A} \; \drawmatrix{B}$.
 %
 % \subsection{Size}
-% By default, matrices are 1cm$\times$1cm large.  The width and height of a
-% matrix are set through, respectively, \DescribeMacro{height}
+% By default, matrices are $1 \times 1$ large in terms of TikZ units.  The width
+% and height of a matrix are set through, respectively, \DescribeMacro{height}
 % |width=|\meta{expr} and \DescribeMacro{width} |height=|\meta{expr}.
-% \meta{expr} is evaluated by {\sc pgf}'s mathematical engine; if it contains no
-% units cm is implied, otherwise, all numbers without units are taken as in pt.
-% \begin{example}
-%   |\drawmatrix[height=.7, width=1cm + 10]A|:
-%    \drawmatrix[height=.7, width=1cm + 10]A
-% \end{example}
 % A width or height of 0 result in vector representations:
 % \begin{example}
 %   |\drawmatrix[width=0]A|:
@@ -173,8 +167,8 @@
 %   |\drawmatrix[banded]B|:
 %    \drawmatrix[banded]B
 %
-%   |\drawmatrix[banded, bandwidth=.5]B|:
-%    \drawmatrix[banded, bandwidth=.5]B
+%   |\drawmatrix[bandwidth=.5]B|:
+%    \drawmatrix[bandwidth=.5]B
 % \end{example}
 %
 % Banding for the lower and upper part of the matrices can be specified
@@ -186,8 +180,8 @@
 %   |\drawmatrix[lower banded]B|:
 %    \drawmatrix[lower banded]B
 %
-%   |\drawmatrix[banded, lower bandwidth=.5, upper bandwidth=.2]B|:
-%    \drawmatrix[banded, lower bandwidth=.5, upper bandwidth=.2]B
+%   |\drawmatrix[lower bandwidth=.5, upper bandwidth=.2]B|:
+%    \drawmatrix[lower bandwidth=.5, upper bandwidth=.2]B
 % \end{example}
 %
 % Banding on rectangular matrices applies to the smaller of the two dimensions:
@@ -215,10 +209,9 @@
 %
 % \subsection{Colors and Style}
 % By default, matrices are drawn in gray and filled white.  The TikZ keys
-% \DescribeMacro{draw} |draw=|\meta{color} and \DescribeMacro{fill}
-% |fill=|\meta{color} are used to set these colors.  In fact, all keys not
-% recognized by this package are passed to the TikZ |\filldraw| command drawing
-% the matrix.
+% |draw=|\meta{color} and |fill=|\meta{color} are used to set these colors.  In
+% fact, all keys not recognized by this package are passed to the TikZ
+% |\filldraw| command drawing the matrix.
 % \begin{example}
 %   |\drawmatrix[fill=yellow, draw=blue]A|:
 %    \drawmatrix[fill=yellow, draw=blue]A
@@ -229,8 +222,8 @@
 %
 % \subsection{The Bounding Box}
 % All matrices are are contained in a rectangular bounding box.  To draw this
-% bounding box (e.g. to visualize the 0 entries in the matrix),
-% \DescribeMacro{bbox style} |bbox style=|\marg{style} is used;  this style
+% bounding box (e.g. to visualize the 0 entries in the matrix), use
+% \DescribeMacro{bbox style} |bbox style=|\marg{style};  this style
 % is applied to the TikZ |\node| that is the bounding box.
 % \begin{example}
 %   |\drawmatrix[lower, bbox style={fill=blue!10}]L|:
@@ -330,43 +323,40 @@
 % \end{example}
 %
 %
-%^^A \StopEventually{
-%^^A   \PrintChanges
-%^^A   \PrintIndex
-%^^A }
-%
 % \section{Implementation}
 %
 % \DoNotIndex{
-%   \RequirePackage, \begin, \csname, \def, \drawmatrix@bboxheight,
-%   \drawmatrix@bboxwidth, \drawmatrix@currkey, \drawmatrix@currval,
-%   \drawmatrix@height, \drawmatrix@lowerbandwidth, \drawmatrix@minsize,
-%   \drawmatrix@mmodefalse, \drawmatrix@mmodetrue, \drawmatrix@offsetheight,
-%   \drawmatrix@offsetwidth, \drawmatrix@setlength, \drawmatrix@upperbandwidth,
-%   \drawmatrix@width, \edef, \else, \end, \endcsname, \expandafter, \fi,
-%   \filldraw, \ifdrawmatrix@externalize, \ifdrawmatrix@lowerbanded,
-%   \ifdrawmatrix@mmode, \ifdrawmatrix@upperbanded, \ifmmode,
-%   \ifpgfmathunitsdeclared, \ifx, \let, \newcommand, \newif, \node, \path,
-%   \pgfkeys, \pgfkeyscurrentkeyRAW, \pgfkeyscurrentvalue, \pgfkeysnovalue,
-%   \pgflinewidth, \pgfmathparse, \pgfmathresult, \tikz@library@external@loaded,
+%   \@bboxheight, \@bboxwidth, \@currname, \@currval, \@height, \@labeltext,
+%   \@lowerbandwidth, \@minsize, \@novalue, \@offsetheight, \@offsetwidth,
+%   \@upperbandwidth, \@width, \RequirePackage, \begin, \csname, \def, \edef,
+%   \else, \end, \endcsname, \expandafter, \fi, \filldraw,
+%   \ifdrawmatrix@externalize, \ifmmode, \ifx, \let, \newcommand, \newif, \node,
+%   \path, \pgfkeys, \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue,
+%   \pgflinewidth, \pgfmathsetmacro, \pgfqkeys, \tikz@library@external@loaded,
 %   \tikzset, \undefined,
 % }
 %
 % This section describes the implementation details of the \textsf{drawmatrix}
 % package, stepping through the code line by line.
 %
-% \subsection{Tikz and Styles}
+% \subsection{TikZ and Styles}
 %
 % The \textsf{tikz} package is used for drawing.
 %    \begin{macrocode}
 \RequirePackage{tikz}
 %    \end{macrocode}
 %
-% Declare the default style for matrices.
+% \begin{macro}{every drawmatrix picture}
+% \begin{macro}{every drawmatrix bbox}
+% \begin{macro}{every drawmatrix}
+% \begin{macro}{every drawmatrix label}
+%   The default style for matrices: |every drawmatrix picture| applies to all
+%   TikZ pictures the matrices are drawn in, |every drawmatrix bbox| applies to
+%   all bounding boxes, |every drawmatrix| applies to the matrices themselves,
+%   and |every drawmatrix label| applies to the labels.
 %    \begin{macrocode}
 \tikzset{
-    every drawmatrix picture/.style={
-    },
+    every drawmatrix picture/.style={},
     every drawmatrix bbox/.style={
         name=drawmatrix bbox,
         inner sep=0,
@@ -382,134 +372,162 @@
     }
 }
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
 %
-% \subsection{String Constants and Ifs}
+% \subsection{If for externalization}
 %
+% \TeX if representing whether to explicitly disable TikZ externalization.
+% \begin{macro}{\ifdrawmatrix@externalize}
 %    \begin{macrocode}
-\newif\ifdrawmatrix@upperbanded
-\newif\ifdrawmatrix@lowerbanded
-\newif\ifdrawmatrix@mmode
 \newif\ifdrawmatrix@externalize
 %    \end{macrocode}
+% \end{macro}
 %
 % \subsection{Key Declarations and Defaults}
 %
-% Helper macro to extract sizes.
-%
-%    \begin{macrocode}
-\def\drawmatrix@setlength[#1]#2{%
-    \pgfmathparse{#2}%
-    \ifpgfmathunitsdeclared%
-        \expandafter\edef\csname drawmatrix@#1\endcsname%
-        {\pgfmathresult pt}%
-    \else%
-        \expandafter\edef\csname drawmatrix@#1\endcsname%
-        {\pgfmathresult cm}%
-    \fi%
-}
-%    \end{macrocode}
-%
-% Set up the path |/drawmatrix|.
-%
+% Everything happens in the path |/drawmatrix|.
 %    \begin{macrocode}
 \pgfkeys{
     drawmatrix/.is family,
     drawmatrix/.cd,
 %    \end{macrocode}
 %
-% The picture.
-%
+% \begin{macro}{picture}
+% \begin{macro}{baseline}
+%   |picture| is the style for the TikZ picture in which the matrix is drawn.
+%   |baseline| sets the baseline of the picture to a named coordinate of the
+%   matrix.
 %    \begin{macrocode}
     picture/.style={},
     baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
 %    \end{macrocode}
+% \end{macro}\end{macro}
 %
-% The bounding box.
-%
+% \begin{macro}{bbox}\begin{macro}{bbox style}
+%   |bbox| is the style of the bounding box, to which |bbox style| appends keys.
 %    \begin{macrocode}
     bbox/.style={},
     bbox style/.style={bbox/.append style={#1}},
-    bbox height/.code=\drawmatrix@setlength[bboxheight]{#1},
-    bbox width/.code=\drawmatrix@setlength[bboxwidth]{#1},
+%    \end{macrocode}
+% \end{macro}\end{macro}
+%
+% \begin{macro}{bbox height}
+% \begin{macro}{bbox width}
+% \begin{macro}{bbox size}
+%   |bbox height| and |bbox width| don't have default values.  |bbox size| sets
+%   them both to the same value.
+%    \begin{macrocode}
+    bbox height/.initial,
+    bbox width/.initial,
     bbox size/.style={bbox height=#1, bbox width=#1},
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
 %
-% The offset from the bounding box.
-%
+% \begin{macro}{offset height}
+% \begin{macro}{offset width}
+% \begin{macro}{offset}
+%   |offset height| and |offset width| are |0| by default. |offset| sets them
+%   both to the same value.
 %    \begin{macrocode}
-    offset height/.code=\drawmatrix@setlength[offsetheight]{#1},
-    offset width/.code=\drawmatrix@setlength[offsetwidth]{#1},
+    offset height/.initial=0,
+    offset width/.initial=0,
     offset/.style={offset height=#1, offset width=#1},
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
 %
 % The matrix size.
 %
+% \begin{macro}{height}
+% \begin{macro}{width}
+% \begin{macro}{size}
+%   |width| and |height| are |1| (TikZ unit) by default. |size| sets them both
+%   to the same value.
 %    \begin{macrocode}
-    drawmatrix/.style={},
-    height/.code=\drawmatrix@setlength[height]{#1},
-    width/.code=\drawmatrix@setlength[width]{#1},
+    height/.initial=1,
+    width/.initial=1,
     size/.style={height=#1, width=#1},
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
 %
 % The matrix shape.
 %
+% \begin{macro}{lower bandwidth}
+% \begin{macro}{upper bandwidth}
+% \begin{macro}{bandwidth}
+%   The |lower bandwidth| and |upper bandwidth| don't have default values.
+%   |bandwidth| sets them both to the same value.
 %    \begin{macrocode}
-    lower banded/.is if=drawmatrix@lowerbanded,
-    upper banded/.is if=drawmatrix@upperbanded,
-    banded/.style={lower banded=#1, upper banded=#1},
-    lower bandwidth/.code=\drawmatrix@setlength[lowerbandwidth]{#1},
-    upper bandwidth/.code=\drawmatrix@setlength[upperbandwidth]{#1},
+    lower bandwidth/.initial,
+    upper bandwidth/.initial,
     bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
-    lower/.style={upper banded, upper bandwidth=0},
-    upper/.style={lower banded, lower bandwidth=0},
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{lower banded}
+% \begin{macro}{upper banded}
+% \begin{macro}{banded}
+%   |lower banded| and |upper banded| are shortcuts to set the corresponding
+%   bandwidths to the default value of |0.3| (TikZ units). |banded| sets them
+%   both.
+%    \begin{macrocode}
+    lower banded/.style={lower bandwidth=.3},
+    upper banded/.style={upper bandwidth=.3},
+    banded/.style={lower banded, upper banded},
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{lower}
+% \begin{macro}{upper}
+% \begin{macro}{diag}
+%   |lower| and |upper| are implemented by setting the opposite bandwidth to
+%   |0|. |diag| sets them both.
+%    \begin{macrocode}
+    lower/.style={upper bandwidth=0},
+    upper/.style={lower bandwidth=0},
     diag/.style={lower, upper},
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
 %
-% Externalization control.
-%
+% \begin{macro}{externalize}
+%   |externalize| sets a \TeX if.
 %    \begin{macrocode}
     externalize/.is if=drawmatrix@externalize,
 %    \end{macrocode}
+% \end{macro}
 %
-% Collect unknown keys in |/drawmatrix/drawmatrix|.
-%
+% Unknown keys are collected in |/drawmatrix/drawmatrix|.
 %    \begin{macrocode}
     drawmatrix/.style={},
     .unknown/.code={%
-        \let\drawmatrix@currname\pgfkeyscurrentname%
-        \let\drawmatrix@currval\pgfkeyscurrentvalue%
-        \ifx#1\pgfkeysnovalue%
-            \pgfqkeys{/drawmatrix}{
-                drawmatrix/.append style/.expand once={%
-                    \drawmatrix@currname%
-                }
-            }%
-        \else%
-            \pgfqkeys{/drawmatrix}{
-                drawmatrix/.append style/.expand twice={%
-                    \expandafter\drawmatrix@currname\expandafter=%
-                    \drawmatrix@currval%
-                }
-            }%
-        \fi%
+        \let\@currname\pgfkeyscurrentname%
+        \let\@currval\pgfkeyscurrentvalue%
+        \ifx#1\pgfkeysnovalue\pgfqkeys{/drawmatrix}{
+            drawmatrix/.append style/.expand once={\@currname}
+        }\else\pgfqkeys{/drawmatrix}{
+            drawmatrix/.append style/.expand twice={%
+                \expandafter\@currname\expandafter=\@currval%
+            }
+        }\fi%
     },
 %    \end{macrocode}
 %
-% The label.
-%
+% \begin{macro}{label}
+% \begin{macro}{label pos}
+% \begin{macro}{label anchor}
+%   |label| is the style for the label. |label pos| sets the label at a named
+%   coordinate of the matrix. |label anchor| sets the label's |anchor|.
 %    \begin{macrocode}
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
     label anchor/.style={label/.append style={anchor=#1}},
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
 %
 % Finally, set the default keys.
-%
 %    \begin{macrocode}
     baseline=label.base,
-    size=1, offset=0,
-    banded=false, bandwidth=.3,
-    label pos=bbox.center, label anchor=mid,
+    label pos=bbox.center, 
+    label anchor=mid,
     externalize=true,
 }
 %    \end{macrocode}
@@ -517,20 +535,18 @@
 % \subsection{User Macros}
 %
 % |\drawmatrixset| as a simple shortcut like |\tikzset|.
-%
 % \begin{macro}{\drawmatrixset}
 %    \begin{macrocode}
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 %    \end{macrocode}
 % \end{macro}
 %
-% Here we go, the main thing: |\drawmatrix|. First, we check if we are in math
+% Here we go, the main thing: |\drawmatrix|. First, check if we are in math
 % mode and apply the options.
-%
 % \begin{macro}{\drawmatrix}
 %    \begin{macrocode}
 \newcommand\drawmatrix[2][]{{%
-    \ifmmode\drawmatrix@mmodetrue\else\drawmatrix@mmodefalse\fi%
+    \ifmmode\edef\@labeltext{$#2$}\else\edef\@labeltext{#2}\fi%
     \drawmatrixset{#1}%
 %    \end{macrocode}
 %
@@ -544,35 +560,42 @@
     \fi%
 %    \end{macrocode}
 %
-% Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
-    % set to the smaller matrix dimension.  Then, the band width is limited by
-    % this smaller dimension.
+% Extract the sizes from the PGF keys.
 %
 %    \begin{macrocode}
-    \pgfmathparse{min(\drawmatrix@width, \drawmatrix@height)}%
-    \edef\drawmatrix@minsize{\pgfmathresult pt}%
-    \ifdrawmatrix@lowerbanded\else%
-        \edef\drawmatrix@lowerbandwidth{\drawmatrix@minsize}%
-    \fi%
-    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@lowerbandwidth)}%
-    \edef\drawmatrix@lowerbandwidth{\pgfmathresult pt}%
-    \ifdrawmatrix@upperbanded\else%
-        \edef\drawmatrix@upperbandwidth{\drawmatrix@minsize}%
-    \fi%
-    \pgfmathparse{min(\drawmatrix@minsize, \drawmatrix@upperbandwidth)}%
-    \edef\drawmatrix@upperbandwidth{\pgfmathresult pt}%
+    \pgfqkeys{/drawmatrix}{
+        height/.get=\@height,
+        width/.get=\@width,
+        lower bandwidth/.get=\@lowerbandwidth,
+        upper bandwidth/.get=\@upperbandwidth,
+        offset height/.get=\@offsetheight,
+        offset width/.get=\@offsetwidth,
+        bbox height/.get=\@bboxheight,
+        bbox width/.get=\@bboxwidth,
+    }%
+    \pgfmathsetmacro\@minsize{min(\@width, \@height)}%
+    \def\@novalue{\pgfkeysnovalue}%
+%    \end{macrocode}
+%
+% Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
+% set to the smaller matrix dimension.  Then, the band width is limited by this
+% smaller dimension.
+%
+%    \begin{macrocode}
+    \ifx\@lowerbandwidth\@novalue\edef\@lowerbandwidth{\@minsize}\fi%
+    \ifx\@upperbandwidth\@novalue\edef\@upperbandwidth{\@minsize}\fi%
+    \pgfmathsetmacro\@lowerbandwidth{min(\@minsize, \@lowerbandwidth)}%
+    \pgfmathsetmacro\@upperbandwidth{min(\@minsize, \@upperbandwidth)}%
 %    \end{macrocode}
 %
 % Set the default bounding box size.
 %
 %    \begin{macrocode}
-    \ifx\drawmatrix@bboxheight\undefined%
-        \pgfmathparse{\drawmatrix@height + \drawmatrix@offsetheight}%
-        \edef\drawmatrix@bboxheight{\pgfmathresult pt}%
+    \ifx\@bboxheight\@novalue%
+        \pgfmathsetmacro\@bboxheight{\@height + \@offsetheight}%
     \fi%
-    \ifx\drawmatrix@bboxwidth\undefined%
-        \pgfmathparse{\drawmatrix@width + \drawmatrix@offsetwidth}%
-        \edef\drawmatrix@bboxwidth{\pgfmathresult pt}%
+    \ifx\@bboxwidth\@novalue%
+        \pgfmathsetmacro\@bboxwidth{\@width + \@offsetwidth}%
     \fi%
 %    \end{macrocode}
 %
@@ -581,52 +604,39 @@
 %    \begin{macrocode}
     \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
         \node[every drawmatrix bbox, /drawmatrix/bbox,
-            minimum height=\drawmatrix@bboxheight,
-            minimum width=\drawmatrix@bboxwidth] {};
+            minimum height=\@bboxheight cm, minimum width=\@bboxwidth cm] {};
 %    \end{macrocode}
 %
-% For the matrix itself, we first declare all its corners and then draw it.
+% For the matrix itself, first declare all its corners and then draw it.
 %
 %    \begin{macrocode}
         \path (drawmatrix bbox.north west)
-            ++(\drawmatrix@offsetwidth + .5\pgflinewidth,
-               -\drawmatrix@offsetheight - .5\pgflinewidth)
+            ++(\@offsetwidth, -\@offsetheight)
+            ++(.5\pgflinewidth, -.5\pgflinewidth)
             coordinate (drawmatrix north west)
-            +(\drawmatrix@width, 0)
-            coordinate (drawmatrix north east)
-            +(\drawmatrix@width, -\drawmatrix@height)
-            coordinate (drawmatrix south east)
-            +(0, -\drawmatrix@height)
-            coordinate (drawmatrix south west)
-            (drawmatrix north east)
-            +(-\drawmatrix@minsize + \drawmatrix@upperbandwidth, 0)
-            coordinate (drawmatrix north)
-            +(0, -\drawmatrix@minsize + \drawmatrix@upperbandwidth)
-            coordinate (drawmatrix east)
-            (drawmatrix south west)
-            +(\drawmatrix@minsize - \drawmatrix@lowerbandwidth, 0)
-            coordinate (drawmatrix south)
-            +(0, \drawmatrix@minsize - \drawmatrix@lowerbandwidth)
-            coordinate (drawmatrix west)
-            ;
+            ++(\@width, 0) coordinate (drawmatrix north east)
+            +(-\@minsize + \@upperbandwidth, 0) coordinate (drawmatrix north)
+            +(0, -\@minsize + \@upperbandwidth) coordinate (drawmatrix east)
+            ++(0, -\@height) coordinate (drawmatrix south east)
+            ++(-\@width, 0) coordinate (drawmatrix south west)
+            +(\@minsize - \@lowerbandwidth, 0) coordinate (drawmatrix south)
+            +(0, \@minsize - \@lowerbandwidth) coordinate (drawmatrix west);
         \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
-            (drawmatrix north west)
+            (drawmatrix north west) 
             -- (drawmatrix north)
-            \ifdrawmatrix@upperbanded-- (drawmatrix east)\fi
+            \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
             -- (drawmatrix south east)
             -- (drawmatrix south)
-            \ifdrawmatrix@lowerbanded-- (drawmatrix west)\fi
+            \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
             -- cycle;
-        \node[minimum height=\drawmatrix@height,
-            minimum width=\drawmatrix@width] (drawmatrix matrix) {};
+        \node[minimum height=\@height cm, minimum width=\@width cm] 
+            (drawmatrix matrix) {};
 %    \end{macrocode}
 %
 % The label.
 %
 %    \begin{macrocode}
-        \node[every drawmatrix label, /drawmatrix/label] {%
-            \ifdrawmatrix@mmode$#2$\else#2\fi%
-        };
+        \node[every drawmatrix label, /drawmatrix/label] {\@labeltext};
     \end{tikzpicture}%
 }}
 %    \end{macrocode}
