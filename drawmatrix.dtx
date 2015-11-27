@@ -57,7 +57,8 @@
 % \changes{v1.0.2}{2015/03/20}{Bugfix: Bbox had a linewidth/2 offset}
 % \changes{v1.0.3}{2015/11/18}{Introduced |diag| option}
 % \changes{v1.1.0}{2015/11/26}{Separate lower and upper banding, externalization
-% control, fixed matrix style collection}
+% control, fixed matrix style collection, lots of simplifications, moved
+% ``every'' keys to |/drawmatrix| path}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -67,12 +68,10 @@
 % \date{\filedate \ \fileversion}
 %
 % \newenvironment{example}{
-%   \begin{center}
-%   \begin{minipage}{.9\textwidth}
+%   \begin{center}\begin{minipage}{.9\textwidth}
 %       \scriptsize
 % }{
-%   \end{minipage}
-%   \end{center}
+%   \end{minipage}\end{center}
 % }
 %
 % \maketitle
@@ -632,7 +631,8 @@
 %    \end{macrocode}
 % \end{macro}
 %
-% \PrintIndex
-%
 % \Finale
+% \PrintIndex
+% \PrintChanges
+%
 \endinput
