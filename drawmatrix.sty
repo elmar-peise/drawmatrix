@@ -23,28 +23,13 @@
 \ProvidesPackage{drawmatrix}
  [2015/11/26 v1.1.0 drawmatrix package]
 \RequirePackage{tikz}
-\tikzset{
-    every drawmatrix picture/.style={},
-    every drawmatrix bbox/.style={
-        name=drawmatrix bbox,
-        inner sep=0,
-    },
-    every drawmatrix/.style={
-        fill=white,
-        draw=gray,
-    },
-    every drawmatrix label/.style={
-        name=drawmatrix label,
-        outer sep=0,
-        inner sep=0,
-    }
-}
 \newif\ifdrawmatrix@externalize
 \pgfkeys{
     drawmatrix/.is family,
     drawmatrix/.cd,
     picture/.style={},
     baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
+    baseline=label.base,
     bbox/.style={},
     bbox style/.style={bbox/.append style={#1}},
     bbox height/.initial,
@@ -66,6 +51,12 @@
     upper/.style={lower bandwidth=0},
     diag/.style={lower, upper},
     externalize/.is if=drawmatrix@externalize,
+    externalize=true,
+    label/.style={},
+    label pos/.style={label/.append style={at=(drawmatrix #1)}},
+    label pos=bbox.center,
+    label anchor/.style={label/.append style={anchor=#1}},
+    label anchor=mid,
     drawmatrix/.style={},
     .unknown/.code={%
         \let\@currname\pgfkeyscurrentname%
@@ -78,13 +69,20 @@
             }
         }\fi%
     },
-    label/.style={},
-    label pos/.style={label/.append style={at=(drawmatrix #1)}},
-    label anchor/.style={label/.append style={anchor=#1}},
-    baseline=label.base,
-    label pos=bbox.center,
-    label anchor=mid,
-    externalize=true,
+    every picture/.style={},
+    every bbox/.style={
+        name=drawmatrix bbox,
+        inner sep=0,
+    },
+    every drawmatrix/.style={
+        fill=white,
+        draw=gray,
+    },
+    every label/.style={
+        name=drawmatrix label,
+        outer sep=0,
+        inner sep=0,
+    }
 }
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
@@ -117,8 +115,8 @@
     \ifx\@bboxwidth\@novalue%
         \pgfmathsetmacro\@bboxwidth{\@width + \@offsetwidth}%
     \fi%
-    \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
-        \node[every drawmatrix bbox, /drawmatrix/bbox,
+    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+        \node[/drawmatrix/every bbox, /drawmatrix/bbox,
             minimum height=\@bboxheight cm, minimum width=\@bboxwidth cm] {};
         \path (drawmatrix bbox.north west)
             ++(\@offsetwidth, -\@offsetheight)
@@ -131,7 +129,7 @@
             ++(-\@width, 0) coordinate (drawmatrix south west)
             +(\@minsize - \@lowerbandwidth, 0) coordinate (drawmatrix south)
             +(0, \@minsize - \@lowerbandwidth) coordinate (drawmatrix west);
-        \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
+        \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             -- (drawmatrix north)
             \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
@@ -141,7 +139,7 @@
             -- cycle;
         \node[minimum height=\@height cm, minimum width=\@width cm]
             (drawmatrix matrix) {};
-        \node[every drawmatrix label, /drawmatrix/label] {\@labeltext};
+        \node[/drawmatrix/every label, /drawmatrix/label] {\@labeltext};
     \end{tikzpicture}%
 }}
 \endinput

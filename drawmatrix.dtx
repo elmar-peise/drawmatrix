@@ -298,12 +298,11 @@
 %
 % Furthermore, TikZ keys for the entire picture, the bounding box, the matrix
 % itself and the label can be set through the TikZ styles
-% \DescribeMacro{every drawmatrix bbox} |every drawmatrix bbox|,
-% \DescribeMacro{every drawmatrix} |every drawmatrix|, and
-% \DescribeMacro{every drawmatrix label} |every drawmatrix label|.
+% \DescribeMacro{every bbox} |every bbox|, \DescribeMacro{every drawmatrix}
+% |every drawmatrix|, and \DescribeMacro{every label} |every label|.
 % \begin{example}
-%    |\tikzset{every drawmatrix/.append style={draw=blue, rounded corners=5pt}}|
-%     \tikzset{every drawmatrix/.append style={draw=blue, rounded corners=5pt}}
+%    |\drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}|
+%     \drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}
 %
 %    |$\drawmatrix A \; \drawmatrix B$|:
 %     $\drawmatrix A \; \drawmatrix B$
@@ -346,34 +345,6 @@
 \RequirePackage{tikz}
 %    \end{macrocode}
 %
-% \begin{macro}{every drawmatrix picture}
-% \begin{macro}{every drawmatrix bbox}
-% \begin{macro}{every drawmatrix}
-% \begin{macro}{every drawmatrix label}
-%   The default style for matrices: |every drawmatrix picture| applies to all
-%   TikZ pictures the matrices are drawn in, |every drawmatrix bbox| applies to
-%   all bounding boxes, |every drawmatrix| applies to the matrices themselves,
-%   and |every drawmatrix label| applies to the labels.
-%    \begin{macrocode}
-\tikzset{
-    every drawmatrix picture/.style={},
-    every drawmatrix bbox/.style={
-        name=drawmatrix bbox,
-        inner sep=0,
-    },
-    every drawmatrix/.style={
-        fill=white,
-        draw=gray,
-    },
-    every drawmatrix label/.style={
-        name=drawmatrix label,
-        outer sep=0,
-        inner sep=0,
-    }
-}
-%    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}\end{macro}
-%
 % \subsection{If for externalization}
 %
 % \TeX if representing whether to explicitly disable TikZ externalization.
@@ -396,10 +367,11 @@
 % \begin{macro}{baseline}
 %   |picture| is the style for the TikZ picture in which the matrix is drawn.
 %   |baseline| sets the baseline of the picture to a named coordinate of the
-%   matrix.
+%   matrix (default: base of the label).
 %    \begin{macrocode}
     picture/.style={},
     baseline/.style={picture/.append style={baseline=(drawmatrix #1)}},
+    baseline=label.base,
 %    \end{macrocode}
 % \end{macro}\end{macro}
 %
@@ -435,8 +407,6 @@
 %    \end{macrocode}
 % \end{macro}\end{macro}\end{macro}
 %
-% The matrix size.
-%
 % \begin{macro}{height}
 % \begin{macro}{width}
 % \begin{macro}{size}
@@ -448,8 +418,6 @@
     size/.style={height=#1, width=#1},
 %    \end{macrocode}
 % \end{macro}\end{macro}\end{macro}
-%
-% The matrix shape.
 %
 % \begin{macro}{lower bandwidth}
 % \begin{macro}{upper bandwidth}
@@ -489,11 +457,27 @@
 % \end{macro}\end{macro}\end{macro}
 %
 % \begin{macro}{externalize}
-%   |externalize| sets a \TeX if.
+%   |externalize| sets a \TeX if (default: |true| behave as all pictures).
 %    \begin{macrocode}
     externalize/.is if=drawmatrix@externalize,
+    externalize=true,
 %    \end{macrocode}
 % \end{macro}
+%
+% \begin{macro}{label}
+% \begin{macro}{label pos}
+% \begin{macro}{label anchor}
+%   |label| is the style for the label. |label pos| sets the label at a named
+%   coordinate of the matrix (default: center of the bounding box). 
+%   |label anchor| sets the label's |anchor| (default: in the middle).
+%    \begin{macrocode}
+    label/.style={},
+    label pos/.style={label/.append style={at=(drawmatrix #1)}},
+    label pos=bbox.center, 
+    label anchor/.style={label/.append style={anchor=#1}},
+    label anchor=mid,
+%    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}
 %
 % Unknown keys are collected in |/drawmatrix/drawmatrix|.
 %    \begin{macrocode}
@@ -511,26 +495,32 @@
     },
 %    \end{macrocode}
 %
-% \begin{macro}{label}
-% \begin{macro}{label pos}
-% \begin{macro}{label anchor}
-%   |label| is the style for the label. |label pos| sets the label at a named
-%   coordinate of the matrix. |label anchor| sets the label's |anchor|.
+% \begin{macro}{every picture}
+% \begin{macro}{every bbox}
+% \begin{macro}{every drawmatrix}
+% \begin{macro}{every label}
+%   The default style for matrices: |every picture| applies to all TikZ pictures
+%   the matrices are drawn in, |every bbox| applies to all bounding boxes,
+%   |every drawmatrix| applies to the matrices themselves, and |every label|
+%   applies to the labels.
 %    \begin{macrocode}
-    label/.style={},
-    label pos/.style={label/.append style={at=(drawmatrix #1)}},
-    label anchor/.style={label/.append style={anchor=#1}},
-%    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
-%
-% Finally, set the default keys.
-%    \begin{macrocode}
-    baseline=label.base,
-    label pos=bbox.center, 
-    label anchor=mid,
-    externalize=true,
+    every picture/.style={},
+    every bbox/.style={
+        name=drawmatrix bbox,
+        inner sep=0,
+    },
+    every drawmatrix/.style={
+        fill=white,
+        draw=gray,
+    },
+    every label/.style={
+        name=drawmatrix label,
+        outer sep=0,
+        inner sep=0,
+    }
 }
 %    \end{macrocode}
+% \end{macro}\end{macro}\end{macro}\end{macro}
 %
 % \subsection{User Macros}
 %
@@ -602,8 +592,8 @@
 % Begin with (drawing) the path for the bounding box.
 %
 %    \begin{macrocode}
-    \begin{tikzpicture}[every drawmatrix picture, /drawmatrix/picture]
-        \node[every drawmatrix bbox, /drawmatrix/bbox,
+    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+        \node[/drawmatrix/every bbox, /drawmatrix/bbox,
             minimum height=\@bboxheight cm, minimum width=\@bboxwidth cm] {};
 %    \end{macrocode}
 %
@@ -621,7 +611,7 @@
             ++(-\@width, 0) coordinate (drawmatrix south west)
             +(\@minsize - \@lowerbandwidth, 0) coordinate (drawmatrix south)
             +(0, \@minsize - \@lowerbandwidth) coordinate (drawmatrix west);
-        \filldraw[every drawmatrix, /drawmatrix/drawmatrix]
+        \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west) 
             -- (drawmatrix north)
             \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
@@ -636,7 +626,7 @@
 % The label.
 %
 %    \begin{macrocode}
-        \node[every drawmatrix label, /drawmatrix/label] {\@labeltext};
+        \node[/drawmatrix/every label, /drawmatrix/label] {\@labeltext};
     \end{tikzpicture}%
 }}
 %    \end{macrocode}
