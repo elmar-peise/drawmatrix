@@ -8,7 +8,7 @@
 %% 
 %% This is a generated file.
 %% 
-%% Copyright (C) 2014 by Elmar Peise
+%% Copyright (C) 2015 by Elmar Peise
 %% 
 %% This file may be distributed and/or modified under the conditions of the LaTeX
 %% Project Public License, either version 1.2 of this license or (at your option)
@@ -86,7 +86,7 @@
 }
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
-    \ifmmode\edef\@labeltext{$#2$}\else\edef\@labeltext{#2}\fi%
+    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
     \drawmatrixset{#1}%
     \ifdrawmatrix@externalize\else%
         \ifx\tikz@library@external@loaded\undefined\else%
@@ -122,11 +122,11 @@
             ++(\@offsetwidth, -\@offsetheight)
             ++(.5\pgflinewidth, -.5\pgflinewidth)
             coordinate (drawmatrix north west)
-            ++(\@width, 0) coordinate (drawmatrix north east)
+            ++(\@width, 0)
             +(-\@minsize + \@upperbandwidth, 0) coordinate (drawmatrix north)
             +(0, -\@minsize + \@upperbandwidth) coordinate (drawmatrix east)
             ++(0, -\@height) coordinate (drawmatrix south east)
-            ++(-\@width, 0) coordinate (drawmatrix south west)
+            ++(-\@width, 0)
             +(\@minsize - \@lowerbandwidth, 0) coordinate (drawmatrix south)
             +(0, \@minsize - \@lowerbandwidth) coordinate (drawmatrix west);
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
