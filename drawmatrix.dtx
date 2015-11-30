@@ -3,26 +3,19 @@
 % Copyright (C) 2015 by Elmar Peise
 % -----------------------------------------
 %
-% This file may be distributed and/or modified under the conditions of the
-% LaTeX Project Public License, either version 1.2 of this license or (at your
-% option) any later version.  The latest version of this license is an:
-%
-%   http://www.latex-project.org/lppl.txt
-%
-% and version 1.2 or later is part of all distributions of LaTeX version
-% 1999/12/01 or later.
+% This package is distributed under the MIT license.
 %
 % \fi
 %
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<package>\ProvidesPackage{drawmatrix}
-%<package> [2015/11/26 v1.1.0 drawmatrix package]
+%<package>\ProvidesPackage{drawmatrix}[2015/11/26 v1.1.0 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
 \usepackage{hypdoc}
 \usepackage{drawmatrix}
+\usepackage{xspace}
 \EnableCrossrefs
 \RecordChanges
 \CodelineIndex
@@ -73,7 +66,7 @@
 % }{
 %   \end{minipage}\end{center}
 % }
-% \newcommand\TikZ{Ti{\it k}Z}
+% \newcommand\TikZ{Ti{\it k}Z\xspace}
 %
 % \maketitle
 %
@@ -304,8 +297,8 @@
 %    |\drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}|
 %     \drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}
 %
-%    |$\drawmatrix A \; \drawmatrix B$|:
-%     $\drawmatrix A \; \drawmatrix B$
+%    |$\drawmatrix A \; \drawmatrix[lower]B$|:
+%     $\drawmatrix A \; \drawmatrix[lower]B$
 % \end{example}
 %
 % \section{Externalization}
@@ -326,11 +319,11 @@
 %
 % \DoNotIndex{
 %   \@bboxheight, \@bboxwidth, \@currname, \@currval, \@height, \@labeltext,
-%   \@lowerbandwidth, \@minsize, \@novalue, \@offsetheight, \@offsetwidth,
-%   \@upperbandwidth, \@width, \RequirePackage, \begin, \csname, \def, \edef,
-%   \else, \end, \endcsname, \expandafter, \fi, \filldraw,
-%   \ifdrawmatrix@externalize, \ifmmode, \ifx, \let, \newcommand, \newif, \node,
-%   \path, \pgfkeys, \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue,
+%   \@lowerbandwidth, \@minsize, \@offsetheight, \@offsetwidth,
+%   \@upperbandwidth, \@width, \@zero, \RequirePackage, \begin, \def, \edef,
+%   \else, \end, \expandafter, \fi, \filldraw, \ifdrawmatrix@externalize,
+%   \ifmmode, \ifx, \let, \newcommand, \newif, \node, \path, \pgfkeys,
+%   \pgfkeysalso, \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue,
 %   \pgflinewidth, \pgfmathsetmacro, \pgfqkeys, \tikz@library@external@loaded,
 %   \tikzset, \undefined,
 % }
@@ -489,9 +482,9 @@
     .unknown/.code={%
         \let\@currname\pgfkeyscurrentname%
         \let\@currval\pgfkeyscurrentvalue%
-        \ifx#1\pgfkeysnovalue\pgfqkeys{/drawmatrix}{
+        \ifx#1\pgfkeysnovalue\pgfkeysalso{
             drawmatrix/.append style/.expand once={\@currname}
-        }\else\pgfqkeys{/drawmatrix}{
+        }\else\pgfkeysalso{
             drawmatrix/.append style/.expand twice={%
                 \expandafter\@currname\expandafter=\@currval%
             }
@@ -554,7 +547,8 @@
     \fi%
 %    \end{macrocode}
 %
-% Extract the sizes from the PGF keys.
+% Extract the sizes from the PGF keys and parse width, height, the minimum
+% dimension and zero for comparison purposes.
 %
 %    \begin{macrocode}
     \pgfqkeys{/drawmatrix}{
@@ -567,8 +561,10 @@
         bbox height/.get=\@bboxheight,
         bbox width/.get=\@bboxwidth,
     }%
+    \pgfmathsetmacro\@height{\@height + 0.0}%
+    \pgfmathsetmacro\@width{\@width + 0.0}%
     \pgfmathsetmacro\@minsize{min(\@width, \@height)}%
-    \def\@novalue{\pgfkeysnovalue}%
+    \pgfmathsetmacro\@zero{0.0}%
 %    \end{macrocode}
 %
 % Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
@@ -576,8 +572,12 @@
 % smaller dimension.
 %
 %    \begin{macrocode}
-    \ifx\@lowerbandwidth\@novalue\edef\@lowerbandwidth{\@minsize}\fi%
-    \ifx\@upperbandwidth\@novalue\edef\@upperbandwidth{\@minsize}\fi%
+    \expandafter\ifx\@lowerbandwidth\pgfkeysnovalue%
+        \edef\@lowerbandwidth{\@minsize}%
+    \fi%
+    \expandafter\ifx\@upperbandwidth\pgfkeysnovalue%
+        \edef\@upperbandwidth{\@minsize}%
+    \fi%
     \pgfmathsetmacro\@lowerbandwidth{min(\@minsize, \@lowerbandwidth)}%
     \pgfmathsetmacro\@upperbandwidth{min(\@minsize, \@upperbandwidth)}%
 %    \end{macrocode}
@@ -585,10 +585,10 @@
 % Set the default bounding box size.
 %
 %    \begin{macrocode}
-    \ifx\@bboxheight\@novalue%
+    \expandafter\ifx\@bboxheight\pgfkeysnovalue%
         \pgfmathsetmacro\@bboxheight{\@height + \@offsetheight}%
     \fi%
-    \ifx\@bboxwidth\@novalue%
+    \expandafter\ifx\@bboxwidth\pgfkeysnovalue%
         \pgfmathsetmacro\@bboxwidth{\@width + \@offsetwidth}%
     \fi%
 %    \end{macrocode}
@@ -598,37 +598,61 @@
 %    \begin{macrocode}
     \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
-            minimum height=\@bboxheight cm, minimum width=\@bboxwidth cm] {};
+            minimum height=\@bboxheight cm, 
+            minimum width=\@bboxwidth cm] {};
 %    \end{macrocode}
 %
-% For the matrix itself, first declare all its corners and then draw it.
-%
+% Whether needed or not, declare all matrix corners.
 %    \begin{macrocode}
         \path (drawmatrix bbox.north west)
             ++(\@offsetwidth, -\@offsetheight)
             ++(.5\pgflinewidth, -.5\pgflinewidth)
             coordinate (drawmatrix north west)
             ++(\@width, 0)
-            +(-\@minsize + \@upperbandwidth, 0) coordinate (drawmatrix north)
-            +(0, -\@minsize + \@upperbandwidth) coordinate (drawmatrix east)
-            ++(0, -\@height) coordinate (drawmatrix south east)
+            +(-\@minsize + \@upperbandwidth, 0)
+            coordinate (drawmatrix north)
+            +(0, -\@minsize + \@upperbandwidth) 
+            coordinate (drawmatrix east)
+            ++(0, -\@height) 
+            coordinate (drawmatrix south east)
             ++(-\@width, 0)
-            +(\@minsize - \@lowerbandwidth, 0) coordinate (drawmatrix south)
-            +(0, \@minsize - \@lowerbandwidth) coordinate (drawmatrix west);
+            +(\@minsize - \@lowerbandwidth, 0) 
+            coordinate (drawmatrix south)
+            +(0, \@minsize - \@lowerbandwidth) 
+            coordinate (drawmatrix west);
+%    \end{macrocode}
+%
+% Now, draw only what is needed of the matrix.  Otherwise path modifications
+% (e.g.,such as rounded corners) might not work.
+%    \begin{macrocode}
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west) 
-            -- (drawmatrix north)
-            \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
+            \ifx\@upperbandwidth\@zero
+                \ifx\@width\@minsize\else -- (drawmatrix north) \fi
+                \ifx\@height\@minsize\else -- (drawmatrix east) \fi
+            \else
+                -- (drawmatrix north)
+                \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
+            \fi
             -- (drawmatrix south east)
-            -- (drawmatrix south)
-            \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
+            \ifx\@lowerbandwidth\@zero
+                \ifx\@width\@minsize\else -- (drawmatrix south) \fi
+                \ifx\@height\@minsize\else -- (drawmatrix west) \fi
+            \else
+                -- (drawmatrix south)
+                \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
+            \fi
             -- cycle;
-        \node[minimum height=\@height cm, minimum width=\@width cm] 
+%    \end{macrocode}
+%
+% Add an invisible node the size of the matrix.
+%    \begin{macrocode}
+        \node[minimum height=\@height cm, minimum width=\@width cm,
+            anchor=north west] at (drawmatrix north west) 
             (drawmatrix matrix) {};
 %    \end{macrocode}
 %
 % The label.
-%
 %    \begin{macrocode}
         \node[/drawmatrix/every label, /drawmatrix/label] {\@labeltext};
     \end{tikzpicture}%
