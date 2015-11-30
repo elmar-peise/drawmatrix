@@ -13,11 +13,11 @@ drawmatrix.pdf: drawmatrix.dtx drawmatrix.sty
 	makeindex -s gglo.ist -o drawmatrix.gls drawmatrix.glo
 	pdflatex drawmatrix.dtx
 
-drawmatrix.tgz: drawmatrix.sty drawmatrix.pdf
+drawmatrix.tgz: README.md drawmatrix.dtx drawmatrix.ins drawmatrix.sty drawmatrix.pdf
 	mkdir drawmatrix
-	cp -r $^ drawmatrix
+	cp $^ drawmatrix
 	tar -czf $@ drawmatrix
-	rm -rf drawmatrix
+	rm -r drawmatrix
 
 clean:
 	rm -rf drawmatrix.{sty,gls,glo,hd,idx,ilg,ind,out,toc,pdf,aux,log,tgz} texput.log
