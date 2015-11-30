@@ -7,8 +7,12 @@ banded matrices.
 
 ## License
 
-This package is distributed under the MIT license.
+This package is distributed under the MIT license (see `LICENSE`).
 
+## Documentation
+
+The documentation `drawmatrix.pdf` is obtained by running `pdflatex` on
+`drawmatrix.dtx`.
 
 ## Bugs, Issues and Requests
 
