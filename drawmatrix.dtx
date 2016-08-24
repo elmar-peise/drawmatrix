@@ -9,7 +9,7 @@
 %
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<package>\ProvidesPackage{drawmatrix}[2016/01/29 v1.1.1 drawmatrix package]
+%<package>\ProvidesPackage{drawmatrix}[2016/08/25 v1.2.0 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -53,6 +53,7 @@
 % control, fixed matrix style collection, lots of simplifications, moved
 % ``every'' keys to |/drawmatrix| path}
 % \changes{v1.1.1}{2016/01/29}{Bugfix: Remove extra space after vectors}
+% \changes{v1.2.0}{2016/01/29}{Add coordinate transformations}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -130,15 +131,16 @@
 % \subsection{Size}
 % By default, matrices are $1 \times 1$ large in terms of \TikZ units.  The
 % width and height of a matrix are set through, respectively,
-% \DescribeMacro{height} |width=|\meta{expr} and \DescribeMacro{width}
-% |height=|\meta{expr}.  A width or height of 0 are useful to represent vectors:
+% \DescribeMacro{height} |width=|\meta{dimension} and \DescribeMacro{width}
+% |height=|\meta{dimension}.  A width or height of 0 are useful to represent
+% vectors:
 % \begin{example}
 %   |\drawmatrix[width=0]A|:
 %    \drawmatrix[width=0]A
 % \end{example}
 %
-% \DescribeMacro{size} |size=|\meta{expr} sets both the width and height to
-% \meta{expr}, resulting in a square matrix.
+% \DescribeMacro{size} |size=|\meta{dimension} sets both the width and height to
+% \meta{dimension}, resulting in a square matrix.
 %
 % \subsection{Shape}
 % By default matrices are rectangular.
@@ -157,8 +159,8 @@
 % \subsubsection{Banded Matrices}
 % Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
 % The band width, i.e., the horizontal/vertical extent from the diagonal, is
-% specified through \DescribeMacro{bandwidth} |bandwidth=|\meta{expr} (default:
-% 0.3);
+% specified through \DescribeMacro{bandwidth} |bandwidth=|\meta{dimension}
+% (default: 0.3);
 % \begin{example}
 %   |\drawmatrix[banded]B|:
 %    \drawmatrix[banded]B
@@ -170,8 +172,8 @@
 % Banding for the lower and upper part of the matrices can be specified
 % separately through \DescribeMacro{lower banded} |lower banded| and
 % \DescribeMacro{upper banded} |upper banded|.  Separate bandwidths are set
-% through \DescribeMacro{lower bandwidth} |lower bandwidth=|\meta{expr} and
-% \DescribeMacro{upper bandwidth} |upper bandwidth=|\meta{expr}:
+% through \DescribeMacro{lower bandwidth} |lower bandwidth=|\meta{dimension} and
+% \DescribeMacro{upper bandwidth} |upper bandwidth=|\meta{dimension}:
 % \begin{example}
 %   |\drawmatrix[lower banded]B|:
 %    \drawmatrix[lower banded]B
@@ -228,11 +230,12 @@
 %
 % By default, the bounding box is just large enough to contain the matrix. Its
 % size is changed through the keys \DescribeMacro{bbox height}
-% |bbox height=|\meta{expr} and \DescribeMacro{bbox width}
-% |bbox width=|\meta{expr} (or \DescribeMacro{bbox size} |bbox size=|\meta{expr}
-% to set them both).  The label of the matrix (and thus the alignment with
-% respect to the surrounding text) are fixed at the center of the bounding box,
-% while the matrix is positioned at its top-left corner.
+% |bbox height=|\meta{dimension} and \DescribeMacro{bbox width}
+% |bbox width=|\meta{dimension} (or \DescribeMacro{bbox size}
+% |bbox size=|\meta{dimension} to set them both).  The label of the matrix (and
+% thus the alignment with respect to the surrounding text) are fixed at the
+% center of the bounding box, while the matrix is positioned at its top-left
+% corner.
 % \begin{example}
 %   |\drawmatrixset{bbox style={fill=blue!10}}|
 %    \drawmatrixset{bbox style={fill=blue!10}}
@@ -242,9 +245,9 @@
 % \end{example}
 %
 % \sloppy The matrix can be positioned within its bounding box through
-% \DescribeMacro{offset height} |offset height=|\meta{expr} and
-% \DescribeMacro{offset width} |offset width=|\meta{expr} (or just
-% \DescribeMacro{offset} |offset=|\meta{expr} to shift along the diagonal).
+% \DescribeMacro{offset height} |offset height=|\meta{dimension} and
+% \DescribeMacro{offset width} |offset width=|\meta{dimension} (or just
+% \DescribeMacro{offset} |offset=|\meta{dimension} to shift along the diagonal).
 % \begin{example}
 %   |\drawmatrixset{bbox style={fill=blue!10}}|
 %    \drawmatrixset{bbox style={fill=blue!10}}
@@ -255,13 +258,13 @@
 %
 % \subsection{Coordinate system transformations}
 %
-% |scale=|\meta{expr} scales all dimensions passed to a matrix:
+% |scale=|\meta{factor} scales all dimensions passed to a matrix:
 % \begin{example}
 %  |\drawmatrix[scale=.6]A \drawmatrix[scale=.6, width=.5]B|:
 %   \drawmatrix[scale=.6]A \drawmatrix[scale=.6, width=.5]B
 % \end{example}
 %
-% |x=|\meta{expr} and |y=|\meta{expr} define the coordinate system for all
+% |x=|\meta{value} and |y=|\meta{value} define the coordinate system for all
 % unit-less dimensions.
 % \begin{example}
 %  |\drawmatrix[x=.6cm, y=.4cm]A \drawmatrix[x=.6cm, y=.4cm, width=1cm]B|:
@@ -558,7 +561,6 @@
 %
 % Here we go, the main thing: |\drawmatrix|. First, apply the options and
 % extract the sizes from the PGF keys.
-%
 % \begin{macro}{\drawmatrix}
 %    \begin{macrocode}
 \newcommand\drawmatrix[2][]{{%
@@ -576,13 +578,11 @@
 %    \end{macrocode}
 %
 % Prepare the label text (keep math mode).
-%
 %    \begin{macrocode}
     \ifmmode\def\dm@labeltext{$#2$}\else\def\dm@labeltext{#2}\fi%
 %    \end{macrocode}
 %
 % Disable externalization if |externalize=false|.  Start the picture.
-%
 %    \begin{macrocode}
     \ifdrawmatrix@externalize\else%
         \ifx\tikz@library@external@loaded\undefined\else%
@@ -593,7 +593,6 @@
 %    \end{macrocode}
 %
 % Parse width, height, the minimum dimension and zero for comparison purposes.
-%
 %    \begin{macrocode}
         \path[/drawmatrix/path] (\dm@width, \dm@height);
         \pgfgetlastxy\dm@width\dm@height
@@ -606,7 +605,6 @@
 % Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
 % set to the smaller matrix dimension.  Then, the band width is limited by this
 % smaller dimension.
-%
 %    \begin{macrocode}
         \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
             \edef\dm@lowerbandwidth{\dm@minsize}
@@ -629,7 +627,6 @@
 %    \end{macrocode}
 %
 % Set the default bounding box size.
-%
 %    \begin{macrocode}
         \expandafter\ifx\dm@bboxheight\pgfkeysnovalue
             \pgfmathsetlengthmacro\dm@bboxheight{
@@ -650,7 +647,6 @@
 %    \end{macrocode}
 %
 % Reset the bounding box and begin with (drawing) the path for the bounding box.
-%
 %    \begin{macrocode}
         \pgfresetboundingbox
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
