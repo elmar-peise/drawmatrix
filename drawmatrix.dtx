@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2015 by Elmar Peise
+% Copyright (C) 2016 by Elmar Peise
 % -----------------------------------------
 %
 % This package is distributed under the MIT license.
@@ -9,7 +9,7 @@
 %
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<package>\ProvidesPackage{drawmatrix}[2015/11/26 v1.1.0 drawmatrix package]
+%<package>\ProvidesPackage{drawmatrix}[2016/01/29 v1.1.1 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -52,6 +52,7 @@
 % \changes{v1.1.0}{2015/11/26}{Separate lower and upper banding, externalization
 % control, fixed matrix style collection, lots of simplifications, moved
 % ``every'' keys to |/drawmatrix| path}
+% \changes{v1.1.1}{2016/01/29}{Bugfix: Remove extra space after vectors}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -226,8 +227,8 @@
 % \end{example}
 %
 % By default, the bounding box is just large enough to contain the matrix. Its
-% size is changed through the keys \DescribeMacro{bbox height} 
-% |bbox height=|\meta{expr} and \DescribeMacro{bbox width} 
+% size is changed through the keys \DescribeMacro{bbox height}
+% |bbox height=|\meta{expr} and \DescribeMacro{bbox width}
 % |bbox width=|\meta{expr} (or \DescribeMacro{bbox size} |bbox size=|\meta{expr}
 % to set them both).  The label of the matrix (and thus the alignment with
 % respect to the surrounding text) are fixed at the center of the bounding box,
@@ -465,12 +466,12 @@
 % \begin{macro}{label pos}
 % \begin{macro}{label anchor}
 %   |label| is the style for the label. |label pos| sets the label at a named
-%   coordinate of the matrix (default: center of the bounding box). 
+%   coordinate of the matrix (default: center of the bounding box).
 %   |label anchor| sets the label's |anchor| (default: in the middle).
 %    \begin{macrocode}
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
-    label pos=bbox.center, 
+    label pos=bbox.center,
     label anchor/.style={label/.append style={anchor=#1}},
     label anchor=mid,
 %    \end{macrocode}
@@ -514,6 +515,12 @@
         name=drawmatrix label,
         outer sep=0,
         inner sep=0,
+    },
+    every node/.style={
+        name=drawmatrix matrix,
+        outer sep=0,
+        inner sep=0,
+        anchor=north west,
     }
 }
 %    \end{macrocode}
@@ -528,30 +535,14 @@
 %    \end{macrocode}
 % \end{macro}
 %
-% Here we go, the main thing: |\drawmatrix|. First, check if we are in math
-% mode and apply the options.
+% Here we go, the main thing: |\drawmatrix|. First, apply the options and
+% extract the sizes from the PGF keys.
+%
 % \begin{macro}{\drawmatrix}
 %    \begin{macrocode}
 \newcommand\drawmatrix[2][]{{%
-    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
-    \drawmatrixset{#1}%
-%    \end{macrocode}
-%
-% Disable externalization if |externalize=false|.
-%
-%    \begin{macrocode}
-    \ifdrawmatrix@externalize\else%
-        \ifx\tikz@library@external@loaded\undefined\else%
-            \tikzset{external/export=false}%
-        \fi%
-    \fi%
-%    \end{macrocode}
-%
-% Extract the sizes from the PGF keys and parse width, height, the minimum
-% dimension and zero for comparison purposes.
-%
-%    \begin{macrocode}
-    \pgfqkeys{/drawmatrix}{
+    \drawmatrixset{
+        #1,
         height/.get=\@height,
         width/.get=\@width,
         lower bandwidth/.get=\@lowerbandwidth,
@@ -561,6 +552,17 @@
         bbox height/.get=\@bboxheight,
         bbox width/.get=\@bboxwidth,
     }%
+%    \end{macrocode}
+%
+% Prepare the label text (keep math mode).
+%
+%    \begin{macrocode}
+    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
+%    \end{macrocode}
+%
+% Parse width, height, the minimum dimension and zero for comparison purposes.
+%
+%    \begin{macrocode}
     \pgfmathsetmacro\@height{\@height + 0.0}%
     \pgfmathsetmacro\@width{\@width + 0.0}%
     \pgfmathsetmacro\@minsize{min(\@width, \@height)}%
@@ -593,12 +595,22 @@
     \fi%
 %    \end{macrocode}
 %
+% Disable externalization if |externalize=false|.
+%
+%    \begin{macrocode}
+    \ifdrawmatrix@externalize\else%
+        \ifx\tikz@library@external@loaded\undefined\else%
+            \tikzset{external/export=false}%
+        \fi%
+    \fi%
+%    \end{macrocode}
+%
 % Begin with (drawing) the path for the bounding box.
 %
 %    \begin{macrocode}
     \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
-            minimum height=\@bboxheight cm, 
+            minimum height=\@bboxheight cm,
             minimum width=\@bboxwidth cm] {};
 %    \end{macrocode}
 %
@@ -611,22 +623,30 @@
             ++(\@width, 0)
             +(-\@minsize + \@upperbandwidth, 0)
             coordinate (drawmatrix north)
-            +(0, -\@minsize + \@upperbandwidth) 
+            +(0, -\@minsize + \@upperbandwidth)
             coordinate (drawmatrix east)
-            ++(0, -\@height) 
+            ++(0, -\@height)
             coordinate (drawmatrix south east)
             ++(-\@width, 0)
-            +(\@minsize - \@lowerbandwidth, 0) 
+            +(\@minsize - \@lowerbandwidth, 0)
             coordinate (drawmatrix south)
-            +(0, \@minsize - \@lowerbandwidth) 
+            +(0, \@minsize - \@lowerbandwidth)
             coordinate (drawmatrix west);
 %    \end{macrocode}
 %
+% Add an invisible node the size of the matrix.
+%    \begin{macrocode}
+        \node[/drawmatrix/every node,
+            minimum height=\@height cm,
+            minimum width=\@width cm]
+            at (drawmatrix north west) {};
+%    \end{macrocode}
+%
 % Now, draw only what is needed of the matrix.  Otherwise path modifications
-% (e.g.,such as rounded corners) might not work.
+% (e.g., such as rounded corners) might not work.
 %    \begin{macrocode}
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
-            (drawmatrix north west) 
+            (drawmatrix north west)
             \ifx\@upperbandwidth\@zero
                 \ifx\@width\@minsize\else -- (drawmatrix north) \fi
                 \ifx\@height\@minsize\else -- (drawmatrix east) \fi
@@ -643,13 +663,6 @@
                 \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
             \fi
             -- cycle;
-%    \end{macrocode}
-%
-% Add an invisible node the size of the matrix.
-%    \begin{macrocode}
-        \node[minimum height=\@height cm, minimum width=\@width cm,
-            anchor=north west] at (drawmatrix north west) 
-            (drawmatrix matrix) {};
 %    \end{macrocode}
 %
 % The label.

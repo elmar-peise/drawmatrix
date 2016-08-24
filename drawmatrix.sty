@@ -8,12 +8,12 @@
 %% 
 %% This is a generated file.
 %% 
-%% Copyright (C) 2015 by Elmar Peise
+%% Copyright (C) 2016 by Elmar Peise
 %% 
 %% This package is distributed under the MIT license.
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{drawmatrix}[2015/11/26 v1.1.0 drawmatrix package]
+\ProvidesPackage{drawmatrix}[2016/01/29 v1.1.1 drawmatrix package]
 \RequirePackage{tikz}
 \newif\ifdrawmatrix@externalize
 \pgfkeys{
@@ -74,18 +74,18 @@
         name=drawmatrix label,
         outer sep=0,
         inner sep=0,
+    },
+    every node/.style={
+        name=drawmatrix matrix,
+        outer sep=0,
+        inner sep=0,
+        anchor=north west,
     }
 }
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
-    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
-    \drawmatrixset{#1}%
-    \ifdrawmatrix@externalize\else%
-        \ifx\tikz@library@external@loaded\undefined\else%
-            \tikzset{external/export=false}%
-        \fi%
-    \fi%
-    \pgfqkeys{/drawmatrix}{
+    \drawmatrixset{
+        #1,
         height/.get=\@height,
         width/.get=\@width,
         lower bandwidth/.get=\@lowerbandwidth,
@@ -95,6 +95,7 @@
         bbox height/.get=\@bboxheight,
         bbox width/.get=\@bboxwidth,
     }%
+    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
     \pgfmathsetmacro\@height{\@height + 0.0}%
     \pgfmathsetmacro\@width{\@width + 0.0}%
     \pgfmathsetmacro\@minsize{min(\@width, \@height)}%
@@ -112,6 +113,11 @@
     \fi%
     \expandafter\ifx\@bboxwidth\pgfkeysnovalue%
         \pgfmathsetmacro\@bboxwidth{\@width + \@offsetwidth}%
+    \fi%
+    \ifdrawmatrix@externalize\else%
+        \ifx\tikz@library@external@loaded\undefined\else%
+            \tikzset{external/export=false}%
+        \fi%
     \fi%
     \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
@@ -133,6 +139,10 @@
             coordinate (drawmatrix south)
             +(0, \@minsize - \@lowerbandwidth)
             coordinate (drawmatrix west);
+        \node[/drawmatrix/every node,
+            minimum height=\@height cm,
+            minimum width=\@width cm]
+            at (drawmatrix north west) {};
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             \ifx\@upperbandwidth\@zero
@@ -151,9 +161,6 @@
                 \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
             \fi
             -- cycle;
-        \node[minimum height=\@height cm, minimum width=\@width cm,
-            anchor=north west] at (drawmatrix north west)
-            (drawmatrix matrix) {};
         \node[/drawmatrix/every label, /drawmatrix/label] {\@labeltext};
     \end{tikzpicture}%
 }}

@@ -13,7 +13,7 @@ drawmatrix.pdf: drawmatrix.dtx drawmatrix.sty
 	makeindex -s gglo.ist -o drawmatrix.gls drawmatrix.glo
 	pdflatex drawmatrix.dtx
 
-drawmatrix.tgz: README.md drawmatrix.dtx drawmatrix.ins drawmatrix.sty drawmatrix.pdf
+drawmatrix.tgz: README.md drawmatrix.dtx drawmatrix.ins drawmatrix.pdf
 	mkdir drawmatrix
 	cp $^ drawmatrix
 	tar -czf $@ drawmatrix
