@@ -55,13 +55,13 @@
     label anchor=mid,
     drawmatrix/.style={},
     .unknown/.code={%
-        \let\@currname\pgfkeyscurrentname%
-        \let\@currval\pgfkeyscurrentvalue%
+        \let\dm@currname\pgfkeyscurrentname%
+        \let\dm@currval\pgfkeyscurrentvalue%
         \ifx#1\pgfkeysnovalue\pgfkeysalso{
-            drawmatrix/.append style/.expand once={\@currname}
+            drawmatrix/.append style/.expand once={\dm@currname}
         }\else\pgfkeysalso{
             drawmatrix/.append style/.expand twice={%
-                \expandafter\@currname\expandafter=\@currval%
+                \expandafter\dm@currname\expandafter=\dm@currval%
             }
         }\fi%
     },
@@ -90,97 +90,110 @@
 \newcommand\drawmatrix[2][]{{%
     \drawmatrixset{
         #1,
-        height/.get=\@height,
-        width/.get=\@width,
-        lower bandwidth/.get=\@lowerbandwidth,
-        upper bandwidth/.get=\@upperbandwidth,
-        offset height/.get=\@offsetheight,
-        offset width/.get=\@offsetwidth,
-        bbox height/.get=\@bboxheight,
-        bbox width/.get=\@bboxwidth,
+        height/.get=\dm@height,
+        width/.get=\dm@width,
+        lower bandwidth/.get=\dm@lowerbandwidth,
+        upper bandwidth/.get=\dm@upperbandwidth,
+        offset height/.get=\dm@offsetheight,
+        offset width/.get=\dm@offsetwidth,
+        bbox height/.get=\dm@bboxheight,
+        bbox width/.get=\dm@bboxwidth,
     }%
-    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
+    \ifmmode\def\dm@labeltext{$#2$}\else\def\dm@labeltext{#2}\fi%
     \ifdrawmatrix@externalize\else%
         \ifx\tikz@library@external@loaded\undefined\else%
             \tikzset{external/export=false}%
         \fi%
     \fi%
     \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
-        \path[/drawmatrix/path] (\@width, \@height);
-        \pgfgetlastxy\@width\@height
-        \path[/drawmatrix/path] (\@offsetwidth, \@offsetheight);
-        \pgfgetlastxy\@offsetwidth\@offsetheight
-        \pgfmathsetlengthmacro\@minsize{min(\@width, \@height)}
-        \pgfmathsetlengthmacro\@zero{0.0}
-        \expandafter\ifx\@lowerbandwidth\pgfkeysnovalue
-            \edef\@lowerbandwidth{\@minsize}
+        \path[/drawmatrix/path] (\dm@width, \dm@height);
+        \pgfgetlastxy\dm@width\dm@height
+        \path[/drawmatrix/path] (\dm@offsetwidth, \dm@offsetheight);
+        \pgfgetlastxy\dm@offsetwidth\dm@offsetheight
+        \pgfmathsetlengthmacro\dm@minsize{min(\dm@width, \dm@height)}
+        \pgfmathsetlengthmacro\dm@zero{0.0}
+        \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
+            \edef\dm@lowerbandwidth{\dm@minsize}
         \else
-            \path[/drawmatrix/path] (\@lowerbandwidth, 0);
-            \pgfgetlastxy\@lowerbandwidth\@zero
+            \path[/drawmatrix/path] (\dm@lowerbandwidth, 0);
+            \pgfgetlastxy\dm@lowerbandwidth\dm@zero
         \fi
-        \expandafter\ifx\@upperbandwidth\pgfkeysnovalue%
-            \edef\@upperbandwidth{\@minsize}
+        \expandafter\ifx\dm@upperbandwidth\pgfkeysnovalue
+            \edef\dm@upperbandwidth{\dm@minsize}
         \else
-            \path[/drawmatrix/path] (0, \@upperbandwidth);
-            \pgfgetlastxy\@zero\@upperbandwidth
+            \path[/drawmatrix/path] (0, \dm@upperbandwidth);
+            \pgfgetlastxy\dm@zero\dm@upperbandwidth
         \fi
-        \pgfmathsetlengthmacro\@lowerbandwidth{min(\@minsize, \@lowerbandwidth)}
-        \pgfmathsetlengthmacro\@upperbandwidth{min(\@minsize, \@upperbandwidth)}
-        \expandafter\ifx\@bboxheight\pgfkeysnovalue
-            \pgfmathsetlengthmacro\@bboxheight{\@height + \@offsetheight}
+        \pgfmathsetlengthmacro\dm@lowerbandwidth{
+            min(\dm@minsize, \dm@lowerbandwidth)
+        }
+        \pgfmathsetlengthmacro\dm@upperbandwidth{
+            min(\dm@minsize, \dm@upperbandwidth)
+        }
+        \expandafter\ifx\dm@bboxheight\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxheight{
+                \dm@height + \dm@offsetheight
+            }
         \else
-            \path[/drawmatrix/path] (0, \@bboxheight);
-            \pgfgetlastxy\@zero\@bboxheight
+            \path[/drawmatrix/path] (0, \dm@bboxheight);
+            \pgfgetlastxy\dm@zero\dm@bboxheight
         \fi
-        \expandafter\ifx\@bboxwidth\pgfkeysnovalue
-            \pgfmathsetlengthmacro\@bboxwidth{\@width + \@offsetwidth}
+        \expandafter\ifx\dm@bboxwidth\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxwidth{
+                \dm@width + \dm@offsetwidth
+            }
         \else
-            \path[/drawmatrix/path] (\@bboxwidth, 0);
-            \pgfgetlastxy\@bboxwidth\@zero
+            \path[/drawmatrix/path] (\dm@bboxwidth, 0);
+            \pgfgetlastxy\dm@bboxwidth\dm@zero
         \fi
         \pgfresetboundingbox
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
-            minimum height=\@bboxheight,
-            minimum width=\@bboxwidth] {};
+            minimum height=\dm@bboxheight,
+            minimum width=\dm@bboxwidth] {};
         \path (drawmatrix bbox.north west)
-            ++(\@offsetwidth, -\@offsetheight)
+            ++(\dm@offsetwidth, -\dm@offsetheight)
             ++(.5\pgflinewidth, -.5\pgflinewidth)
             coordinate (drawmatrix north west)
-            ++(\@width, 0)
-            +(-\@minsize + \@upperbandwidth, 0)
+            ++(\dm@width, 0)
+            +(-\dm@minsize + \dm@upperbandwidth, 0)
             coordinate (drawmatrix north)
-            +(0, -\@minsize + \@upperbandwidth)
+            +(0, -\dm@minsize + \dm@upperbandwidth)
             coordinate (drawmatrix east)
-            ++(0, -\@height)
+            ++(0, -\dm@height)
             coordinate (drawmatrix south east)
-            ++(-\@width, 0)
-            +(\@minsize - \@lowerbandwidth, 0)
+            ++(-\dm@width, 0)
+            +(\dm@minsize - \dm@lowerbandwidth, 0)
             coordinate (drawmatrix south)
-            +(0, \@minsize - \@lowerbandwidth)
+            +(0, \dm@minsize - \dm@lowerbandwidth)
             coordinate (drawmatrix west);
         \node[/drawmatrix/every node,
-            minimum height=\@height,
-            minimum width=\@width]
+            minimum height=\dm@height,
+            minimum width=\dm@width]
             at (drawmatrix north west) {};
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
-            \ifx\@upperbandwidth\@zero
-                \ifx\@width\@minsize\else -- (drawmatrix north) \fi
-                \ifx\@height\@minsize\else -- (drawmatrix east) \fi
+            \ifx\dm@upperbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix north) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix east) \fi
             \else
                 -- (drawmatrix north)
-                \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
+                \ifx\dm@upperbandwidth\dm@minsize\else
+                    -- (drawmatrix east)
+                \fi
             \fi
             -- (drawmatrix south east)
-            \ifx\@lowerbandwidth\@zero
-                \ifx\@width\@minsize\else -- (drawmatrix south) \fi
-                \ifx\@height\@minsize\else -- (drawmatrix west) \fi
+            \ifx\dm@lowerbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix south) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix west) \fi
             \else
                 -- (drawmatrix south)
-                \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
+                \ifx\dm@lowerbandwidth\dm@minsize\else
+                    -- (drawmatrix west)
+                \fi
             \fi
             -- cycle;
-        \node[/drawmatrix/every label, /drawmatrix/label] {\@labeltext};
+        \node[/drawmatrix/every label, /drawmatrix/label]
+            {\dm@labeltext};
     \end{tikzpicture}%
 }}
 \endinput

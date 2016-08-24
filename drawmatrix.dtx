@@ -157,8 +157,8 @@
 % \subsubsection{Banded Matrices}
 % Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
 % The band width, i.e., the horizontal/vertical extent from the diagonal, is
-% specified through \DescribeMacro{bandwidth} |bandwidth=|\meta{expra (default:
-% 0.3)};
+% specified through \DescribeMacro{bandwidth} |bandwidth=|\meta{expr} (default:
+% 0.3);
 % \begin{example}
 %   |\drawmatrix[banded]B|:
 %    \drawmatrix[banded]B
@@ -335,14 +335,15 @@
 % \section{Implementation}
 %
 % \DoNotIndex{
-%   \@bboxheight, \@bboxwidth, \@currname, \@currval, \@height, \@labeltext,
-%   \@lowerbandwidth, \@minsize, \@offsetheight, \@offsetwidth,
-%   \@upperbandwidth, \@width, \@zero, \RequirePackage, \begin, \def, \edef,
-%   \else, \end, \expandafter, \fi, \filldraw, \ifdrawmatrix@externalize,
-%   \ifmmode, \ifx, \let, \newcommand, \newif, \node, \path, \pgfkeys,
-%   \pgfkeysalso, \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue,
-%   \pgflinewidth, \pgfgetlastxy, \pgfmathsetlengthmacro, \pgfresetboundingbox,
-%   \pgfqkeys, \tikz@library@external@loaded, \tikzset, \undefined,
+%   \dm@bboxheight, \dm@bboxwidth, \dm@currname, \dm@currval, \dm@height,
+%   \dm@labeltext, \dm@lowerbandwidth, \dm@minsize, \dm@offsetheight,
+%   \dm@offsetwidth, \dm@upperbandwidth, \dm@width, \dm@zero, \RequirePackage,
+%   \begin, \def, \edef, \else, \end, \expandafter, \fi, \filldraw,
+%   \ifdrawmatrix@externalize, \ifmmode, \ifx, \let, \newcommand, \newif, \node,
+%   \path, \pgfkeys, \pgfkeysalso, \pgfkeyscurrentname, \pgfkeyscurrentvalue,
+%   \pgfkeysnovalue, \pgflinewidth, \pgfgetlastxy, \pgfmathsetlengthmacro,
+%   \pgfresetboundingbox, \pgfqkeys, \tikz@library@external@loaded, \tikzset,
+%   \undefined
 % }
 %
 % This section describes the implementation details of the \textsf{drawmatrix}
@@ -501,13 +502,13 @@
 %    \begin{macrocode}
     drawmatrix/.style={},
     .unknown/.code={%
-        \let\@currname\pgfkeyscurrentname%
-        \let\@currval\pgfkeyscurrentvalue%
+        \let\dm@currname\pgfkeyscurrentname%
+        \let\dm@currval\pgfkeyscurrentvalue%
         \ifx#1\pgfkeysnovalue\pgfkeysalso{
-            drawmatrix/.append style/.expand once={\@currname}
+            drawmatrix/.append style/.expand once={\dm@currname}
         }\else\pgfkeysalso{
             drawmatrix/.append style/.expand twice={%
-                \expandafter\@currname\expandafter=\@currval%
+                \expandafter\dm@currname\expandafter=\dm@currval%
             }
         }\fi%
     },
@@ -563,21 +564,21 @@
 \newcommand\drawmatrix[2][]{{%
     \drawmatrixset{
         #1,
-        height/.get=\@height,
-        width/.get=\@width,
-        lower bandwidth/.get=\@lowerbandwidth,
-        upper bandwidth/.get=\@upperbandwidth,
-        offset height/.get=\@offsetheight,
-        offset width/.get=\@offsetwidth,
-        bbox height/.get=\@bboxheight,
-        bbox width/.get=\@bboxwidth,
+        height/.get=\dm@height,
+        width/.get=\dm@width,
+        lower bandwidth/.get=\dm@lowerbandwidth,
+        upper bandwidth/.get=\dm@upperbandwidth,
+        offset height/.get=\dm@offsetheight,
+        offset width/.get=\dm@offsetwidth,
+        bbox height/.get=\dm@bboxheight,
+        bbox width/.get=\dm@bboxwidth,
     }%
 %    \end{macrocode}
 %
 % Prepare the label text (keep math mode).
 %
 %    \begin{macrocode}
-    \ifmmode\def\@labeltext{$#2$}\else\def\@labeltext{#2}\fi%
+    \ifmmode\def\dm@labeltext{$#2$}\else\def\dm@labeltext{#2}\fi%
 %    \end{macrocode}
 %
 % Disable externalization if |externalize=false|.  Start the picture.
@@ -594,12 +595,12 @@
 % Parse width, height, the minimum dimension and zero for comparison purposes.
 %
 %    \begin{macrocode}
-        \path[/drawmatrix/path] (\@width, \@height);
-        \pgfgetlastxy\@width\@height
-        \path[/drawmatrix/path] (\@offsetwidth, \@offsetheight);
-        \pgfgetlastxy\@offsetwidth\@offsetheight
-        \pgfmathsetlengthmacro\@minsize{min(\@width, \@height)}
-        \pgfmathsetlengthmacro\@zero{0.0}
+        \path[/drawmatrix/path] (\dm@width, \dm@height);
+        \pgfgetlastxy\dm@width\dm@height
+        \path[/drawmatrix/path] (\dm@offsetwidth, \dm@offsetheight);
+        \pgfgetlastxy\dm@offsetwidth\dm@offsetheight
+        \pgfmathsetlengthmacro\dm@minsize{min(\dm@width, \dm@height)}
+        \pgfmathsetlengthmacro\dm@zero{0.0}
 %    \end{macrocode}
 %
 % Prepare the band widths:  First, if the matrix is not banded, the bandwidth is
@@ -607,36 +608,44 @@
 % smaller dimension.
 %
 %    \begin{macrocode}
-        \expandafter\ifx\@lowerbandwidth\pgfkeysnovalue
-            \edef\@lowerbandwidth{\@minsize}
+        \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
+            \edef\dm@lowerbandwidth{\dm@minsize}
         \else
-            \path[/drawmatrix/path] (\@lowerbandwidth, 0);
-            \pgfgetlastxy\@lowerbandwidth\@zero
+            \path[/drawmatrix/path] (\dm@lowerbandwidth, 0);
+            \pgfgetlastxy\dm@lowerbandwidth\dm@zero
         \fi
-        \expandafter\ifx\@upperbandwidth\pgfkeysnovalue
-            \edef\@upperbandwidth{\@minsize}
+        \expandafter\ifx\dm@upperbandwidth\pgfkeysnovalue
+            \edef\dm@upperbandwidth{\dm@minsize}
         \else
-            \path[/drawmatrix/path] (0, \@upperbandwidth);
-            \pgfgetlastxy\@zero\@upperbandwidth
+            \path[/drawmatrix/path] (0, \dm@upperbandwidth);
+            \pgfgetlastxy\dm@zero\dm@upperbandwidth
         \fi
-        \pgfmathsetlengthmacro\@lowerbandwidth{min(\@minsize, \@lowerbandwidth)}
-        \pgfmathsetlengthmacro\@upperbandwidth{min(\@minsize, \@upperbandwidth)}
+        \pgfmathsetlengthmacro\dm@lowerbandwidth{
+            min(\dm@minsize, \dm@lowerbandwidth)
+        }
+        \pgfmathsetlengthmacro\dm@upperbandwidth{
+            min(\dm@minsize, \dm@upperbandwidth)
+        }
 %    \end{macrocode}
 %
 % Set the default bounding box size.
 %
 %    \begin{macrocode}
-        \expandafter\ifx\@bboxheight\pgfkeysnovalue
-            \pgfmathsetlengthmacro\@bboxheight{\@height + \@offsetheight}
+        \expandafter\ifx\dm@bboxheight\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxheight{
+                \dm@height + \dm@offsetheight
+            }
         \else
-            \path[/drawmatrix/path] (0, \@bboxheight);
-            \pgfgetlastxy\@zero\@bboxheight
+            \path[/drawmatrix/path] (0, \dm@bboxheight);
+            \pgfgetlastxy\dm@zero\dm@bboxheight
         \fi
-        \expandafter\ifx\@bboxwidth\pgfkeysnovalue
-            \pgfmathsetlengthmacro\@bboxwidth{\@width + \@offsetwidth}
+        \expandafter\ifx\dm@bboxwidth\pgfkeysnovalue
+            \pgfmathsetlengthmacro\dm@bboxwidth{
+                \dm@width + \dm@offsetwidth
+            }
         \else
-            \path[/drawmatrix/path] (\@bboxwidth, 0);
-            \pgfgetlastxy\@bboxwidth\@zero
+            \path[/drawmatrix/path] (\dm@bboxwidth, 0);
+            \pgfgetlastxy\dm@bboxwidth\dm@zero
         \fi
 %    \end{macrocode}
 %
@@ -645,35 +654,35 @@
 %    \begin{macrocode}
         \pgfresetboundingbox
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
-            minimum height=\@bboxheight,
-            minimum width=\@bboxwidth] {};
+            minimum height=\dm@bboxheight,
+            minimum width=\dm@bboxwidth] {};
 %    \end{macrocode}
 %
 % Whether needed or not, declare all matrix corners.
 %    \begin{macrocode}
         \path (drawmatrix bbox.north west)
-            ++(\@offsetwidth, -\@offsetheight)
+            ++(\dm@offsetwidth, -\dm@offsetheight)
             ++(.5\pgflinewidth, -.5\pgflinewidth)
             coordinate (drawmatrix north west)
-            ++(\@width, 0)
-            +(-\@minsize + \@upperbandwidth, 0)
+            ++(\dm@width, 0)
+            +(-\dm@minsize + \dm@upperbandwidth, 0)
             coordinate (drawmatrix north)
-            +(0, -\@minsize + \@upperbandwidth)
+            +(0, -\dm@minsize + \dm@upperbandwidth)
             coordinate (drawmatrix east)
-            ++(0, -\@height)
+            ++(0, -\dm@height)
             coordinate (drawmatrix south east)
-            ++(-\@width, 0)
-            +(\@minsize - \@lowerbandwidth, 0)
+            ++(-\dm@width, 0)
+            +(\dm@minsize - \dm@lowerbandwidth, 0)
             coordinate (drawmatrix south)
-            +(0, \@minsize - \@lowerbandwidth)
+            +(0, \dm@minsize - \dm@lowerbandwidth)
             coordinate (drawmatrix west);
 %    \end{macrocode}
 %
 % Add an invisible node the size of the matrix.
 %    \begin{macrocode}
         \node[/drawmatrix/every node,
-            minimum height=\@height,
-            minimum width=\@width]
+            minimum height=\dm@height,
+            minimum width=\dm@width]
             at (drawmatrix north west) {};
 %    \end{macrocode}
 %
@@ -682,27 +691,32 @@
 %    \begin{macrocode}
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
-            \ifx\@upperbandwidth\@zero
-                \ifx\@width\@minsize\else -- (drawmatrix north) \fi
-                \ifx\@height\@minsize\else -- (drawmatrix east) \fi
+            \ifx\dm@upperbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix north) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix east) \fi
             \else
                 -- (drawmatrix north)
-                \ifx\@upperbandwidth\@minsize\else -- (drawmatrix east) \fi
+                \ifx\dm@upperbandwidth\dm@minsize\else
+                    -- (drawmatrix east)
+                \fi
             \fi
             -- (drawmatrix south east)
-            \ifx\@lowerbandwidth\@zero
-                \ifx\@width\@minsize\else -- (drawmatrix south) \fi
-                \ifx\@height\@minsize\else -- (drawmatrix west) \fi
+            \ifx\dm@lowerbandwidth\dm@zero
+                \ifx\dm@width\dm@minsize\else -- (drawmatrix south) \fi
+                \ifx\dm@height\dm@minsize\else -- (drawmatrix west) \fi
             \else
                 -- (drawmatrix south)
-                \ifx\@lowerbandwidth\@minsize\else -- (drawmatrix west) \fi
+                \ifx\dm@lowerbandwidth\dm@minsize\else
+                    -- (drawmatrix west)
+                \fi
             \fi
             -- cycle;
 %    \end{macrocode}
 %
 % The label.
 %    \begin{macrocode}
-        \node[/drawmatrix/every label, /drawmatrix/label] {\@labeltext};
+        \node[/drawmatrix/every label, /drawmatrix/label]
+            {\dm@labeltext};
     \end{tikzpicture}%
 }}
 %    \end{macrocode}
