@@ -1,6 +1,3 @@
-
-testpdfs=$(patsubst %/main.tex,%/main.pdf,$(wildcard */main.tex))
-
 all: drawmatrix.sty drawmatrix.pdf drawmatrix.tgz
 
 drawmatrix.sty: drawmatrix.dtx drawmatrix.ins
