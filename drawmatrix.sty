@@ -13,7 +13,7 @@
 %% This package is distributed under the MIT license.
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{drawmatrix}[2016/08/25 v1.2.0 drawmatrix package]
+\ProvidesPackage{drawmatrix}[2016/11/12 v1.3.0 drawmatrix package]
 \RequirePackage{tikz}
 \newif\ifdrawmatrix@externalize
 \pgfkeys{
@@ -46,13 +46,17 @@
     lower/.style={upper bandwidth=0},
     upper/.style={lower bandwidth=0},
     diag/.style={lower, upper},
-    externalize/.is if=drawmatrix@externalize,
-    externalize=true,
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
     label pos=bbox.center,
     label anchor/.style={label/.append style={anchor=#1}},
     label anchor=mid,
+    label base/.initial,
+    label outer/.style={},
+    label base anchor/.style={label outer/.append style={
+        anchor=#1, at=(drawmatrix label.#1)
+    }},
+    label base anchor=base west,
     drawmatrix/.style={},
     .unknown/.code={%
         \let\dm@currname\pgfkeyscurrentname%
@@ -68,23 +72,26 @@
     every picture/.style={},
     every bbox/.style={
         name=drawmatrix bbox,
-        inner sep=0,
+        inner sep=0
     },
     every drawmatrix/.style={
         fill=white,
-        draw=gray,
+        draw=gray
     },
     every label/.style={
         name=drawmatrix label,
         outer sep=0,
-        inner sep=0,
+        inner sep=0
     },
     every node/.style={
         name=drawmatrix matrix,
         outer sep=0,
         inner sep=0,
         anchor=north west,
-    }
+        at=(drawmatrix north west)
+    },
+    externalize/.is if=drawmatrix@externalize,
+    externalize=true
 }
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
@@ -98,8 +105,16 @@
         offset width/.get=\dm@offsetwidth,
         bbox height/.get=\dm@bboxheight,
         bbox width/.get=\dm@bboxwidth,
+        label base/.get=\dm@labelbase
     }%
-    \ifmmode\def\dm@labeltext{$#2$}\else\def\dm@labeltext{#2}\fi%
+    \edef\dm@labeltext{\ifmmode$#2$\else#2\fi}%
+    \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
+        \let\dm@labeltextouter\dm@labeltext%
+        \edef\dm@labelbase{%
+            \ifmmode$\dm@labelbase$\else\dm@labelbase\fi%
+        }%
+        \def\dm@labeltext{\phantom{\dm@labelbase}}%
+    \fi%
     \ifdrawmatrix@externalize\else%
         \ifx\tikz@library@external@loaded\undefined\else%
             \tikzset{external/export=false}%
@@ -113,13 +128,13 @@
         \pgfmathsetlengthmacro\dm@minsize{min(\dm@width, \dm@height)}
         \pgfmathsetlengthmacro\dm@zero{0.0}
         \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
-            \edef\dm@lowerbandwidth{\dm@minsize}
+            \def\dm@lowerbandwidth{\dm@minsize}
         \else
             \path[/drawmatrix/path] (\dm@lowerbandwidth, 0);
             \pgfgetlastxy\dm@lowerbandwidth\dm@zero
         \fi
         \expandafter\ifx\dm@upperbandwidth\pgfkeysnovalue
-            \edef\dm@upperbandwidth{\dm@minsize}
+            \def\dm@upperbandwidth{\dm@minsize}
         \else
             \path[/drawmatrix/path] (0, \dm@upperbandwidth);
             \pgfgetlastxy\dm@zero\dm@upperbandwidth
@@ -168,8 +183,7 @@
             coordinate (drawmatrix west);
         \node[/drawmatrix/every node,
             minimum height=\dm@height,
-            minimum width=\dm@width]
-            at (drawmatrix north west) {};
+            minimum width=\dm@width] {};
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             \ifx\dm@upperbandwidth\dm@zero
@@ -194,6 +208,10 @@
             -- cycle;
         \node[/drawmatrix/every label, /drawmatrix/label]
             {\dm@labeltext};
+        \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else
+            \node[/drawmatrix/every label, /drawmatrix/label,
+                  /drawmatrix/label outer] {\dm@labeltextouter};
+        \fi
     \end{tikzpicture}%
 }}
 \endinput

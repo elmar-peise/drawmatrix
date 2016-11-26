@@ -9,7 +9,7 @@
 %
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<package>\ProvidesPackage{drawmatrix}[2016/08/25 v1.2.0 drawmatrix package]
+%<package>\ProvidesPackage{drawmatrix}[2016/11/12 v1.3.0 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -53,7 +53,8 @@
 % control, fixed matrix style collection, lots of simplifications, moved
 % ``every'' keys to |/drawmatrix| path}
 % \changes{v1.1.1}{2016/01/29}{Bugfix: Remove extra space after vectors}
-% \changes{v1.2.0}{2016/08/25}{Add coordinate transformations}
+% \changes{v1.2.0}{2016/08/25}{Added coordinate transformations}
+% \changes{v1.3.0}{2016/11/12}{Added label base (shifted exponents)}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -157,10 +158,9 @@
 % \end{example}
 %
 % \subsubsection{Banded Matrices}
-% Matrices are drawn as banded through the key \DescribeMacro{banded} |banded|.
-% The band width, i.e., the horizontal/vertical extent from the diagonal, is
-% specified through \DescribeMacro{bandwidth} |bandwidth=|\meta{dimension}
-% (default: 0.3);
+% Matrices are drawn as banded with the key \DescribeMacro{banded} |banded|.
+% The bandwidth, i.e., the horizontal/vertical extent from the diagonal, is
+% set by \DescribeMacro{bandwidth} |bandwidth=|\meta{dimension} (default: 0.3);
 % \begin{example}
 %   |\drawmatrix[banded]B|:
 %    \drawmatrix[banded]B
@@ -203,6 +203,23 @@
 % \begin{example}
 %   |\drawmatrix[diag]D|:
 %    \drawmatrix[diag]D
+% \end{example}
+%
+% \subsubsection{Super- and subscripts}
+% \DescribeMacro{label base} |label base| defines the label to be centered in
+% the drawmatrix, the actual label will be aligned to this label at the.  The
+% default alignment is at the |base west| of the label, which can changed
+% through the \DescribeMacro{label base anchor} |label anchor| key.
+% This featur is useful to, e.g., draw centered labes with exponents:
+% \begin{example}
+%   |$\drawmatrix[size=.5]{A^T}$|:
+%    $\drawmatrix[size=.5]{A^T}$
+%
+%   |$\drawmatrix[size=.5, label base=A]{A^T}$|:
+%    $\drawmatrix[size=.5, label base=A]{A^T}$
+%
+%   |$\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$|:
+%    $\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$
 % \end{example}
 %
 % \subsection{Colors and Style}
@@ -339,14 +356,14 @@
 %
 % \DoNotIndex{
 %   \dm@bboxheight, \dm@bboxwidth, \dm@currname, \dm@currval, \dm@height,
-%   \dm@labeltext, \dm@lowerbandwidth, \dm@minsize, \dm@offsetheight,
-%   \dm@offsetwidth, \dm@upperbandwidth, \dm@width, \dm@zero, \RequirePackage,
-%   \begin, \def, \edef, \else, \end, \expandafter, \fi, \filldraw,
-%   \ifdrawmatrix@externalize, \ifmmode, \ifx, \let, \newcommand, \newif, \node,
-%   \path, \pgfkeys, \pgfkeysalso, \pgfkeyscurrentname, \pgfkeyscurrentvalue,
-%   \pgfkeysnovalue, \pgflinewidth, \pgfgetlastxy, \pgfmathsetlengthmacro,
-%   \pgfresetboundingbox, \pgfqkeys, \tikz@library@external@loaded, \tikzset,
-%   \undefined
+%   \dm@labelbase, \dm@labeltextouter, \dm@labeltext, \dm@lowerbandwidth,
+%   \dm@minsize, \dm@offsetheight, \dm@offsetwidth, \dm@upperbandwidth,
+%   \dm@width, \dm@zero, \RequirePackage, \begin, \def, \edef, \else, \end,
+%   \expandafter, \fi, \filldraw, \ifdrawmatrix@externalize, \ifmmode, \ifx,
+%   \let, \newcommand, \newif, \node, \path, \pgfkeys, \pgfkeysalso,
+%   \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue, \pgflinewidth,
+%   \pgfgetlastxy, \pgfmathsetlengthmacro, \pgfresetboundingbox, \pgfqkeys,
+%   \phantom, \tikz@library@external@loaded, \tikzset, \undefined,
 % }
 %
 % This section describes the implementation details of the \textsf{drawmatrix}
@@ -478,14 +495,6 @@
 %    \end{macrocode}
 % \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{externalize}
-%   |externalize| sets a \TeX{} if (default: |true| = behave as all pictures).
-%    \begin{macrocode}
-    externalize/.is if=drawmatrix@externalize,
-    externalize=true,
-%    \end{macrocode}
-% \end{macro}
-%
 % \begin{macro}{label}
 % \begin{macro}{label pos}
 % \begin{macro}{label anchor}
@@ -500,6 +509,19 @@
     label anchor=mid,
 %    \end{macrocode}
 % \end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{label base}
+% \begin{macro}{label base anchor}
+%  |label base| and |label base anchor| allow to ofset labels with exponents.
+%    \begin{macrocode}
+    label base/.initial,
+    label outer/.style={},
+    label base anchor/.style={label outer/.append style={
+        anchor=#1, at=(drawmatrix label.#1)
+    }},
+    label base anchor=base west,
+%    \end{macrocode}
+% \end{macro}\end{macro}
 %
 % Unknown keys are collected in |/drawmatrix/drawmatrix|.
 %    \begin{macrocode}
@@ -529,26 +551,35 @@
     every picture/.style={},
     every bbox/.style={
         name=drawmatrix bbox,
-        inner sep=0,
+        inner sep=0
     },
     every drawmatrix/.style={
         fill=white,
-        draw=gray,
+        draw=gray
     },
     every label/.style={
         name=drawmatrix label,
         outer sep=0,
-        inner sep=0,
+        inner sep=0
     },
     every node/.style={
         name=drawmatrix matrix,
         outer sep=0,
         inner sep=0,
         anchor=north west,
-    }
-}
+        at=(drawmatrix north west)
+    },
 %    \end{macrocode}
 % \end{macro}\end{macro}\end{macro}\end{macro}
+%
+% \begin{macro}{externalize}
+%   |externalize| sets a \TeX{} if (default: |true| = behave as all pictures).
+%    \begin{macrocode}
+    externalize/.is if=drawmatrix@externalize,
+    externalize=true
+}
+%    \end{macrocode}
+% \end{macro}
 %
 % \subsection{User Macros}
 %
@@ -574,12 +605,21 @@
         offset width/.get=\dm@offsetwidth,
         bbox height/.get=\dm@bboxheight,
         bbox width/.get=\dm@bboxwidth,
+        label base/.get=\dm@labelbase
     }%
 %    \end{macrocode}
 %
-% Prepare the label text (keep math mode).
+% Prepare the label text and, if needed label outer text (for alignment).  This
+% needs to be outside the tikzpicture to properly detect math mode.
 %    \begin{macrocode}
-    \ifmmode\def\dm@labeltext{$#2$}\else\def\dm@labeltext{#2}\fi%
+    \edef\dm@labeltext{\ifmmode$#2$\else#2\fi}%
+    \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
+        \let\dm@labeltextouter\dm@labeltext%
+        \edef\dm@labelbase{%
+            \ifmmode$\dm@labelbase$\else\dm@labelbase\fi%
+        }%
+        \def\dm@labeltext{\phantom{\dm@labelbase}}%
+    \fi%
 %    \end{macrocode}
 %
 % Disable externalization if |externalize=false|.  Start the picture.
@@ -607,13 +647,13 @@
 % smaller dimension.
 %    \begin{macrocode}
         \expandafter\ifx\dm@lowerbandwidth\pgfkeysnovalue
-            \edef\dm@lowerbandwidth{\dm@minsize}
+            \def\dm@lowerbandwidth{\dm@minsize}
         \else
             \path[/drawmatrix/path] (\dm@lowerbandwidth, 0);
             \pgfgetlastxy\dm@lowerbandwidth\dm@zero
         \fi
         \expandafter\ifx\dm@upperbandwidth\pgfkeysnovalue
-            \edef\dm@upperbandwidth{\dm@minsize}
+            \def\dm@upperbandwidth{\dm@minsize}
         \else
             \path[/drawmatrix/path] (0, \dm@upperbandwidth);
             \pgfgetlastxy\dm@zero\dm@upperbandwidth
@@ -678,8 +718,7 @@
 %    \begin{macrocode}
         \node[/drawmatrix/every node,
             minimum height=\dm@height,
-            minimum width=\dm@width]
-            at (drawmatrix north west) {};
+            minimum width=\dm@width] {};
 %    \end{macrocode}
 %
 % Now, draw only what is needed of the matrix.  Otherwise path modifications
@@ -713,6 +752,10 @@
 %    \begin{macrocode}
         \node[/drawmatrix/every label, /drawmatrix/label]
             {\dm@labeltext};
+        \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else
+            \node[/drawmatrix/every label, /drawmatrix/label,
+                  /drawmatrix/label outer] {\dm@labeltextouter};
+        \fi
     \end{tikzpicture}%
 }}
 %    \end{macrocode}
