@@ -9,7 +9,7 @@
 %
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<package>\ProvidesPackage{drawmatrix}[2016/11/12 v1.3.0 drawmatrix package]
+%<package>\ProvidesPackage{drawmatrix}[2016/12/20 v1.3.0 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -55,6 +55,7 @@
 % \changes{v1.1.1}{2016/01/29}{Bugfix: Remove extra space after vectors}
 % \changes{v1.2.0}{2016/08/25}{Added coordinate transformations}
 % \changes{v1.3.0}{2016/11/12}{Added label base (shifted exponents)}
+% \changes{v1.4.0}{2016/12/20}{Added exponenet shortcut}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -86,22 +87,22 @@
 % understanding of linear algebra properties, relations, and operations
 % enormously.  This package provides simple tools to bring such representations
 % to \LaTeX.  For instance,
-% $$
+% \[
 %   \drawmatrix[upper]A \;
 %   \drawmatrix[width=.5]X +
 %   \drawmatrix[width=.5]X \;
 %   \drawmatrix[upper, size=.5, bbox height=1]B =
 %   \drawmatrix[width=.5]C
-% $$
+% \]
 % is typeset as follows:
 % \begin{verbatim}
-% $$
+% \[
 %   \drawmatrix[upper]A \;
 %   \drawmatrix[width=.5]X +
 %   \drawmatrix[width=.5]X \;
 %   \drawmatrix[upper, size=.5, bbox height=1]B =
 %   \drawmatrix[width=.5]C
-% $$
+% \]
 % \end{verbatim}
 %
 %
@@ -129,8 +130,15 @@
 % $\drawmatrix{A} \drawmatrix{B}$, a little space (|\;|) helps to yield a more
 % natural result: $\drawmatrix{A} \; \drawmatrix{B}$.
 %
+% Note that the \meta{label} is stored in \DescribeMacro{label text}
+% |label text|, which can also be set directly to overwrite \meta{label}.
+% \begin{example}
+%   |$\drawmatrix[label text=B]A$|:
+%    $\drawmatrix[label text=B]A$
+% \end{example}
+%
 % \subsection{Size}
-% By default, matrices are $1 \times 1$ large in terms of \TikZ units.  The
+% By default, matrices are of size $1 \times 1$ in terms of \TikZ units.  The
 % width and height of a matrix are set through, respectively,
 % \DescribeMacro{height} |width=|\meta{dimension} and \DescribeMacro{width}
 % |height=|\meta{dimension}.  A width or height of 0 are useful to represent
@@ -220,6 +228,14 @@
 %
 %   |$\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$|:
 %    $\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$
+% \end{example}
+%
+% \DescribeMacro{exponent} |exponent| is a shortcut to add an exponent to matrix
+% without offsetting the labe.  Internally, it sets the |label base| to the
+% current |label text| and adds the |exponent| ot the |label text|.
+% \begin{example}
+%   |$\drawmatrix[size=.5, exponent=T]A$|:
+%    $\drawmatrix[size=.5, exponent=T]A$
 % \end{example}
 %
 % \subsection{Colors and Style}
@@ -495,20 +511,23 @@
 %    \end{macrocode}
 % \end{macro}\end{macro}\end{macro}
 %
+% \begin{macro}{label text}
 % \begin{macro}{label}
 % \begin{macro}{label pos}
 % \begin{macro}{label anchor}
-%   |label| is the style for the label. |label pos| sets the label at a named
-%   coordinate of the matrix (default: center of the bounding box).
-%   |label anchor| sets the label's |anchor| (default: in the middle).
+%   |label| is the style for the label with the text |label text|. |label pos|
+%   sets the label at a named coordinate of the matrix (default: center of the
+%   bounding box).  |label anchor| sets the label's |anchor| (default: in the
+%   middle).
 %    \begin{macrocode}
+    label text/.initial,
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
     label pos=bbox.center,
     label anchor/.style={label/.append style={anchor=#1}},
     label anchor=mid,
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
+% \end{macro}\end{macro}\end{macro} \end{macro}
 %
 % \begin{macro}{label base}
 % \begin{macro}{label base anchor}
@@ -522,6 +541,17 @@
     label base anchor=base west,
 %    \end{macrocode}
 % \end{macro}\end{macro}
+%
+% \begin{macro}{exponent}
+%   |exponent| is a shortcut to add an expontent to the label text without using
+%   the |label base|.
+%    \begin{macrocode}
+    exponent/.style={
+        label base/.expanded=\pgfkeysvalueof{/drawmatrix/label text},
+        label text/.append=^{#1}
+    },
+%    \end{macrocode}
+% \end{macro}
 %
 % Unknown keys are collected in |/drawmatrix/drawmatrix|.
 %    \begin{macrocode}
@@ -596,7 +626,9 @@
 %    \begin{macrocode}
 \newcommand\drawmatrix[2][]{{%
     \drawmatrixset{
+        label text={#2},
         #1,
+        label text/.get=\dm@labeltext,
         height/.get=\dm@height,
         width/.get=\dm@width,
         lower bandwidth/.get=\dm@lowerbandwidth,
@@ -612,7 +644,7 @@
 % Prepare the label text and, if needed label outer text (for alignment).  This
 % needs to be outside the tikzpicture to properly detect math mode.
 %    \begin{macrocode}
-    \edef\dm@labeltext{\ifmmode$#2$\else#2\fi}%
+    \ifmmode\edef\dm@labeltext{$\dm@labeltext$}\fi%
     \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
         \let\dm@labeltextouter\dm@labeltext%
         \edef\dm@labelbase{%

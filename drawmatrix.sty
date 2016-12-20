@@ -13,7 +13,7 @@
 %% This package is distributed under the MIT license.
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{drawmatrix}[2016/11/12 v1.3.0 drawmatrix package]
+\ProvidesPackage{drawmatrix}[2016/12/20 v1.3.0 drawmatrix package]
 \RequirePackage{tikz}
 \newif\ifdrawmatrix@externalize
 \pgfkeys{
@@ -46,6 +46,7 @@
     lower/.style={upper bandwidth=0},
     upper/.style={lower bandwidth=0},
     diag/.style={lower, upper},
+    label text/.initial,
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
     label pos=bbox.center,
@@ -57,6 +58,10 @@
         anchor=#1, at=(drawmatrix label.#1)
     }},
     label base anchor=base west,
+    exponent/.style={
+        label base/.expanded=\pgfkeysvalueof{/drawmatrix/label text},
+        label text/.append=^{#1}
+    },
     drawmatrix/.style={},
     .unknown/.code={%
         \let\dm@currname\pgfkeyscurrentname%
@@ -96,7 +101,9 @@
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 \newcommand\drawmatrix[2][]{{%
     \drawmatrixset{
+        label text={#2},
         #1,
+        label text/.get=\dm@labeltext,
         height/.get=\dm@height,
         width/.get=\dm@width,
         lower bandwidth/.get=\dm@lowerbandwidth,
@@ -107,7 +114,7 @@
         bbox width/.get=\dm@bboxwidth,
         label base/.get=\dm@labelbase
     }%
-    \edef\dm@labeltext{\ifmmode$#2$\else#2\fi}%
+    \ifmmode\edef\dm@labeltext{$\dm@labeltext$}\fi%
     \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
         \let\dm@labeltextouter\dm@labeltext%
         \edef\dm@labelbase{%
