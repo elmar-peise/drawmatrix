@@ -1,0 +1,8 @@
+addons:
+  apt:
+    packages:
+      - texlive-fonts-recommended 
+      - texlive-latex-recommended
+      - texlive-fonts-extra 
+      - texlive-latex-extra 
+script: make TEXFLAGS="-interaction=nonstopmode -halt-on-error"

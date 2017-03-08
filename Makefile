@@ -2,13 +2,13 @@ all: drawmatrix.sty drawmatrix.pdf drawmatrix.tgz
 
 drawmatrix.sty: drawmatrix.dtx drawmatrix.ins
 	rm -f drawmatrix.sty
-	latex drawmatrix.ins
+	latex ${TEXFLAGS} drawmatrix.ins
 
 drawmatrix.pdf: drawmatrix.dtx drawmatrix.sty
-	pdflatex drawmatrix.dtx
+	pdflatex ${TEXFLAGS} drawmatrix.dtx
 	makeindex -s gind.ist drawmatrix.idx
 	makeindex -s gglo.ist -o drawmatrix.gls drawmatrix.glo
-	pdflatex drawmatrix.dtx
+	pdflatex ${TEXFLAGS} drawmatrix.dtx
 
 drawmatrix.tgz: README.md drawmatrix.dtx drawmatrix.ins drawmatrix.pdf
 	mkdir drawmatrix
