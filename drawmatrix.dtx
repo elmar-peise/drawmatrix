@@ -606,44 +606,34 @@
 %   |externalize| sets a \TeX{} if (default: |true| = behave as all pictures).
 %    \begin{macrocode}
     externalize/.is if=drawmatrix@externalize,
-    externalize=true
-}
+    externalize=true,
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{User Macros}
-%
-% |\drawmatrixset| as a simple shortcut like |\tikzset|.
-% \begin{macro}{\drawmatrixset}
+% \subsection{Hooks}
+% \begin{macro}{post label code}
+%   Hooks for inserting code at various points of the render.
 %    \begin{macrocode}
-\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
+    pre code/.code={},
+    post setup code/.code={},
+    pre coordinate code/.code={},
+    post coordinate code/.code={},
+    pre draw code/.code={},
+    post draw code/.code={},
+    pre label code/.code={},
+    post label code/.code={},
+    post code/.code={},
 %    \end{macrocode}
 % \end{macro}
 %
-% Here we go, the main thing: |\drawmatrix|. First, apply the options and
-% extract the sizes from the PGF keys.
-% \begin{macro}{\drawmatrix}
-%    \begin{macrocode}
-\newcommand\drawmatrix[2][]{{%
-    \drawmatrixset{
-        label text={#2},
-        #1,
-        label text/.get=\dm@labeltext,
-        height/.get=\dm@height,
-        width/.get=\dm@width,
-        lower bandwidth/.get=\dm@lowerbandwidth,
-        upper bandwidth/.get=\dm@upperbandwidth,
-        offset height/.get=\dm@offsetheight,
-        offset width/.get=\dm@offsetwidth,
-        bbox height/.get=\dm@bboxheight,
-        bbox width/.get=\dm@bboxwidth,
-        label base/.get=\dm@labelbase
-    }%
-%    \end{macrocode}
+% \subsection{Code Keys}
+% The following keys contain the code that construct the drawmatrix.
 %
+% \begin{macro}{setup label code}
 % Prepare the label text and, if needed label outer text (for alignment).  This
 % needs to be outside the tikzpicture to properly detect math mode.
 %    \begin{macrocode}
+    setup label code/.code={
     \ifmmode\edef\dm@labeltext{$\dm@labeltext$}\fi%
     \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
         \let\dm@labeltextouter\dm@labeltext%
@@ -652,20 +642,27 @@
         }%
         \def\dm@labeltext{\phantom{\dm@labelbase}}%
     \fi%
+    },
 %    \end{macrocode}
+% \end{macro}
 %
-% Disable externalization if |externalize=false|.  Start the picture.
+% \begin{macro}{externalization code}
+% Disable externalization if |externalize=false|.
 %    \begin{macrocode}
-    \ifdrawmatrix@externalize\else%
-        \ifx\tikz@library@external@loaded\undefined\else%
-            \tikzset{external/export=false}%
+    externalization code/.code={
+        \ifdrawmatrix@externalize\else%
+            \ifx\tikz@library@external@loaded\undefined\else%
+                \tikzset{external/export=false}%
+            \fi%
         \fi%
-    \fi%
-    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+    },
 %    \end{macrocode}
+% \end{macro}
 %
+% \begin{macro}{setup sizes code}
 % Parse width, height, the minimum dimension and zero for comparison purposes.
 %    \begin{macrocode}
+    setup sizes code/.code={
         \path[/drawmatrix/path] (\dm@width, \dm@height);
         \pgfgetlastxy\dm@width\dm@height
         \path[/drawmatrix/path] (\dm@offsetwidth, \dm@offsetheight);
@@ -716,18 +713,26 @@
             \path[/drawmatrix/path] (\dm@bboxwidth, 0);
             \pgfgetlastxy\dm@bboxwidth\dm@zero
         \fi
+    },
 %    \end{macrocode}
+% \end{macro}
 %
+% \begin{macro}{bbox code}
 % Reset the bounding box and begin with (drawing) the path for the bounding box.
 %    \begin{macrocode}
+    bbox code/.code={
         \pgfresetboundingbox
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
             minimum height=\dm@bboxheight,
             minimum width=\dm@bboxwidth] {};
+    },
 %    \end{macrocode}
+% \end{macro}
 %
+% \begin{macro}{coordinate code}
 % Whether needed or not, declare all matrix corners.
 %    \begin{macrocode}
+    coordinate code/.code={
         \path (drawmatrix bbox.north west)
             ++(\dm@offsetwidth, -\dm@offsetheight)
             ++(.5\pgflinewidth, -.5\pgflinewidth)
@@ -744,18 +749,26 @@
             coordinate (drawmatrix south)
             +(0, \dm@minsize - \dm@lowerbandwidth)
             coordinate (drawmatrix west);
+    },
 %    \end{macrocode}
+% \end{macro}
 %
+% \begin{macro}{node code}
 % Add an invisible node the size of the matrix.
 %    \begin{macrocode}
+    node code/.code={
         \node[/drawmatrix/every node,
             minimum height=\dm@height,
             minimum width=\dm@width] {};
+    },
 %    \end{macrocode}
+% \end{macro}
 %
+% \begin{macro}{draw code}
 % Now, draw only what is needed of the matrix.  Otherwise path modifications
 % (e.g., such as rounded corners) might not work.
 %    \begin{macrocode}
+    draw code/.code={
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             \ifx\dm@upperbandwidth\dm@zero
@@ -778,17 +791,74 @@
                 \fi
             \fi
             -- cycle;
+    },
 %    \end{macrocode}
+% \end{macro}
 %
+% \begin{macro}{label code}
 % The label.
 %    \begin{macrocode}
+    label code/.code={
         \node[/drawmatrix/every label, /drawmatrix/label]
             {\dm@labeltext};
         \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else
             \node[/drawmatrix/every label, /drawmatrix/label,
                   /drawmatrix/label outer] {\dm@labeltextouter};
         \fi
+    }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{User Macros}
+%
+% |\drawmatrixset| as a simple shortcut like |\tikzset|.
+% \begin{macro}{\drawmatrixset}
+%    \begin{macrocode}
+\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
+%    \end{macrocode}
+% \end{macro}
+%
+% Here we go, the main thing: |\drawmatrix|. First, apply the options and
+% extract the sizes from the PGF keys.
+% \begin{macro}{\drawmatrix}
+%    \begin{macrocode}
+\newcommand\drawmatrix[2][]{{%
+    \drawmatrixset{
+        label text={#2},
+        #1,
+        label text/.get=\dm@labeltext,
+        height/.get=\dm@height,
+        width/.get=\dm@width,
+        lower bandwidth/.get=\dm@lowerbandwidth,
+        upper bandwidth/.get=\dm@upperbandwidth,
+        offset height/.get=\dm@offsetheight,
+        offset width/.get=\dm@offsetwidth,
+        bbox height/.get=\dm@bboxheight,
+        bbox width/.get=\dm@bboxwidth,
+        label base/.get=\dm@labelbase,
+        pre code,
+        setup label code,
+        externalization code
+    }%
+    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+        \drawmatrixset{
+            setup sizes code, 
+            post setup code,
+            bbox code,
+            pre coordinate code, 
+            coordinate code, 
+            post coordinate code,
+            node code,
+            pre draw code, 
+            draw code, 
+            post draw code,
+            pre label code, 
+            label code, 
+            post label code
+        }
     \end{tikzpicture}%
+    \drawmatrixset{post code}%
 }}
 %    \end{macrocode}
 % \end{macro}

@@ -96,24 +96,17 @@
         at=(drawmatrix north west)
     },
     externalize/.is if=drawmatrix@externalize,
-    externalize=true
-}
-\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
-\newcommand\drawmatrix[2][]{{%
-    \drawmatrixset{
-        label text={#2},
-        #1,
-        label text/.get=\dm@labeltext,
-        height/.get=\dm@height,
-        width/.get=\dm@width,
-        lower bandwidth/.get=\dm@lowerbandwidth,
-        upper bandwidth/.get=\dm@upperbandwidth,
-        offset height/.get=\dm@offsetheight,
-        offset width/.get=\dm@offsetwidth,
-        bbox height/.get=\dm@bboxheight,
-        bbox width/.get=\dm@bboxwidth,
-        label base/.get=\dm@labelbase
-    }%
+    externalize=true,
+    pre code/.code={},
+    post setup code/.code={},
+    pre coordinate code/.code={},
+    post coordinate code/.code={},
+    pre draw code/.code={},
+    post draw code/.code={},
+    pre label code/.code={},
+    post label code/.code={},
+    post code/.code={},
+    setup label code/.code={
     \ifmmode\edef\dm@labeltext{$\dm@labeltext$}\fi%
     \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else%
         \let\dm@labeltextouter\dm@labeltext%
@@ -122,12 +115,15 @@
         }%
         \def\dm@labeltext{\phantom{\dm@labelbase}}%
     \fi%
-    \ifdrawmatrix@externalize\else%
-        \ifx\tikz@library@external@loaded\undefined\else%
-            \tikzset{external/export=false}%
+    },
+    externalization code/.code={
+        \ifdrawmatrix@externalize\else%
+            \ifx\tikz@library@external@loaded\undefined\else%
+                \tikzset{external/export=false}%
+            \fi%
         \fi%
-    \fi%
-    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+    },
+    setup sizes code/.code={
         \path[/drawmatrix/path] (\dm@width, \dm@height);
         \pgfgetlastxy\dm@width\dm@height
         \path[/drawmatrix/path] (\dm@offsetwidth, \dm@offsetheight);
@@ -168,10 +164,14 @@
             \path[/drawmatrix/path] (\dm@bboxwidth, 0);
             \pgfgetlastxy\dm@bboxwidth\dm@zero
         \fi
+    },
+    bbox code/.code={
         \pgfresetboundingbox
         \node[/drawmatrix/every bbox, /drawmatrix/bbox,
             minimum height=\dm@bboxheight,
             minimum width=\dm@bboxwidth] {};
+    },
+    coordinate code/.code={
         \path (drawmatrix bbox.north west)
             ++(\dm@offsetwidth, -\dm@offsetheight)
             ++(.5\pgflinewidth, -.5\pgflinewidth)
@@ -188,9 +188,13 @@
             coordinate (drawmatrix south)
             +(0, \dm@minsize - \dm@lowerbandwidth)
             coordinate (drawmatrix west);
+    },
+    node code/.code={
         \node[/drawmatrix/every node,
             minimum height=\dm@height,
             minimum width=\dm@width] {};
+    },
+    draw code/.code={
         \filldraw[/drawmatrix/every drawmatrix, /drawmatrix/drawmatrix]
             (drawmatrix north west)
             \ifx\dm@upperbandwidth\dm@zero
@@ -213,13 +217,53 @@
                 \fi
             \fi
             -- cycle;
+    },
+    label code/.code={
         \node[/drawmatrix/every label, /drawmatrix/label]
             {\dm@labeltext};
         \expandafter\ifx\dm@labelbase\pgfkeysnovalue\else
             \node[/drawmatrix/every label, /drawmatrix/label,
                   /drawmatrix/label outer] {\dm@labeltextouter};
         \fi
+    }
+}
+\newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
+\newcommand\drawmatrix[2][]{{%
+    \drawmatrixset{
+        label text={#2},
+        #1,
+        label text/.get=\dm@labeltext,
+        height/.get=\dm@height,
+        width/.get=\dm@width,
+        lower bandwidth/.get=\dm@lowerbandwidth,
+        upper bandwidth/.get=\dm@upperbandwidth,
+        offset height/.get=\dm@offsetheight,
+        offset width/.get=\dm@offsetwidth,
+        bbox height/.get=\dm@bboxheight,
+        bbox width/.get=\dm@bboxwidth,
+        label base/.get=\dm@labelbase,
+        pre code,
+        setup label code,
+        externalization code
+    }%
+    \begin{tikzpicture}[/drawmatrix/every picture, /drawmatrix/picture]
+        \drawmatrixset{
+            setup sizes code,
+            post setup code,
+            bbox code,
+            pre coordinate code,
+            coordinate code,
+            post coordinate code,
+            node code,
+            pre draw code,
+            draw code,
+            post draw code,
+            pre label code,
+            label code,
+            post label code
+        }
     \end{tikzpicture}%
+    \drawmatrixset{post code}%
 }}
 \endinput
 %%
