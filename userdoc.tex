@@ -1,0 +1,375 @@
+\section{Introduction}
+In many situations, visual representations of matrices facilitate the
+understanding of linear algebra properties, relations, and operations
+enormously.  This package provides simple tools to bring such representations
+to \LaTeX.  For instance,
+\[
+  \drawmatrix[upper]A \;
+  \drawmatrix[width=.5]X +
+  \drawmatrix[width=.5]X \;
+  \drawmatrix[upper, size=.5, bbox height=1]B =
+  \drawmatrix[width=.5]C
+\]
+is typeset as follows:
+\begin{dispListing*}{listing only}
+\[
+  \drawmatrix[upper]A \;
+  \drawmatrix[width=.5]X +
+  \drawmatrix[width=.5]X \;
+  \drawmatrix[upper, size=.5, bbox height=1]B =
+  \drawmatrix[width=.5]C
+\]
+\end{dispListing*}
+
+
+\section{Drawing Matrices}
+\begin{docCommand}{drawmatrix}{\oarg{options}\marg{label}} 
+    Draws a matrix labeled \meta{label}.  The optional \meta{options}, which
+    modify various aspects of drawn matrix through PGF's key-value system, are
+    introduced in the following sections.
+\end{docCommand}
+
+The label is typeset in the surrounding mode and style.
+\begin{dispExample*}{righthand width=.35\textwidth}
+    $\drawmatrix A$
+    {\bfseries\drawmatrix A}
+    {\large\drawmatrix A}
+\end{dispExample*}
+In equations, parentheses (spanned with \cs{left} and \cs{right}), subscripts,
+and superscripts naturally extend to the drawn shape: 
+\begin{dispExample*}{righthand width=.35\textwidth}
+    $\left(
+    \drawmatrix A_i + 
+    \drawmatrix B^{-1}
+    \right) 
+    \drawmatrix C$  
+\end{dispExample*}
+Used in matrix products, a little space (\cs;) helps to yield a more natural
+result: 
+\begin{dispExample}
+    $\drawmatrix A \drawmatrix B$ 
+
+    $\drawmatrix A \; \drawmatrix B$
+\end{dispExample}
+
+\begin{docDmKey}{label text}{=\meta{text}}{no default, initially \meta{label}}
+    Stores the label text.  It overwrites \refCom{drawmatrix}'s \meta{label}
+    argument.
+    \begin{dispExample}
+        $\drawmatrix[label text=B]A$
+    \end{dispExample}
+\end{docDmKey}
+
+
+\subsection{Size}
+
+\begin{docDmKey}[][docmulti]{height}{=\meta{dimension}}{no default, initially 1}
+\end{docDmKey}
+\begin{docDmKey}{width}{=\meta{dimension}}{no default, initially 1}
+    Width and height of the drawmatrix in \TikZ's coordinate system |canvas|.
+    May be given in units such as |em| or |cm|.
+    \begin{dispExample}
+        \drawmatrix[width=.5]A
+        \drawmatrix[width=2ex]B
+        \drawmatrix[height=.35cm]C
+    \end{dispExample}
+\end{docDmKey}
+
+A width or height of |0| are useful to represent vectors:
+\begin{dispExample}
+    \drawmatrix[width=0]x
+\end{dispExample}
+
+\begin{docDmKey}{size}{=\meta{dimension}}{style, no default}
+    Shortcut for setting both \refKey{/drawmatrix/height} and
+    \refKey{/drawmatrix/width} to the same \meta{dimension}, resulting in a
+    square matrix.
+\end{docDmKey}
+
+
+\subsection{Shape}
+
+By default matrices are rectangular.
+
+
+\subsubsection{Triangular and Trapezoidal Matrices}
+\begin{docDmKey}[][docmulti]{lower}{}{style, no value, initially unset}
+\end{docDmKey}
+\begin{docDmKey}{upper}{}{style, no value, initially unset}
+    Result in, respectively, lower- and upper-triangular matrices.  Non-square
+    matrices become trapezoidal.
+    \begin{dispExample}
+        \drawmatrix[lower]L
+        \drawmatrix[upper, width=1.5]U
+    \end{dispExample}
+\end{docDmKey}
+
+
+\subsubsection{Banded Matrices}
+
+\begin{docDmKey}[][docmulti]{lower banded}{}{style, no value, initially unset}
+\end{docDmKey}
+\begin{docDmKey}{upper banded}{}{style, no value}
+    Draw matrices as banded with bandwidth |0.3|.
+    \begin{dispExample}
+        \drawmatrix[lower banded]B
+        \drawmatrix[upper banded]B
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{banded}{}{style, no value}
+    Shortcut for setting both \refKey{/drawmatrix/lower banded} and
+    \refKey{/drawmatrix/upper banded}.
+    \begin{dispExample}
+        \drawmatrix[banded]B
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}[][docmulti]{lower bandwidth}{=\meta{dimension}}{no default, initially empty}
+\end{docDmKey}
+\begin{docDmKey}{upper bandwidth}{=\meta{dimension}}{no default, initially empty}
+    The bandwidths, i.e., the horizontal/vertical extent from the diagonal.
+    \begin{dispExample}
+        \drawmatrix[lower bandwidth=.5]B
+        \drawmatrix[upper bandwidth=.5]B
+    \end{dispExample}
+\end{docDmKey}
+\begin{docDmKey}{bandwidth}{=\meta{dimension}}{style, no default}
+    Shortcut for setting both \refKey{/drawmatrix/lower bandwidth} and
+    \refKey{/drawmatrix/upper bandwidth}.
+    \begin{dispExample}
+        \drawmatrix[bandwidth=.5]B
+    \end{dispExample}
+\end{docDmKey}
+
+Banding on rectangular matrices applies to the smaller of the two dimensions:
+\begin{dispExample}
+    \drawmatrix[banded, width=.8]B
+    \drawmatrix[upper banded, height=.7]B
+\end{dispExample}
+
+\refKey{/drawmatrix/banded} can be combined with \refKey{/drawmatrix/lower} or
+\refKey{/drawmatrix/upper} to draw the intersection of both shapes.
+\begin{dispExample}
+    \drawmatrix[banded, lower]L
+\end{dispExample}
+
+
+\subsubsection{Diagonal Matrices}
+
+\begin{docDmKey}{diag}{}{style, no value}
+    Shortcut for \refKey{/drawmatrix/bandwidth}|=0|.
+    \begin{dispExample}
+        \drawmatrix[diag]D
+    \end{dispExample}
+\end{docDmKey}
+
+
+\subsubsection{Super- and Subscripts}
+
+\begin{docDmKey}{label base}{=\meta{text}}{no default, initially empty}
+    Defines the label to be centered in the drawmatrix, and to which the actual
+    \refKey{/drawmatrix/label text} is aligned.  This feature is useful to,
+    e.g., draw centered labels with exponents:
+    \begin{dispExample}
+        $\drawmatrix[size=.5]{A^T}$
+        $\drawmatrix[size=.5, label base=A]{A^T}$
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{label base anchor}{=\meta{anchor}}{no default, initially |base west|}
+    The anchor of the \refKey{/drawmatrix/label text} with respect to the
+    \refKey{/drawmatrix/label base}.
+    \begin{dispExample}
+        $\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{exponent}{=\meta{text}}{style, no default}
+    Shortcut to add an exponent to matrix without offsetting the label.  It sets
+    the \refKey{/drawmatrix/label base} to the current \refKey{/drawmatrix/label
+    text} and adds the exponent \meta{text} to \refKey{/drawmatrix/label text}.
+    \begin{dispExample}
+       $\drawmatrix[size=.5, exponent=T]A$
+    \end{dispExample}
+\end{docDmKey}
+
+
+\subsection{Colors and Style}
+
+By default, matrices are drawn in gray and filled white.  The \TikZ keys
+|draw=|\meta{color} and |fill=|\meta{color} change these colors.  In fact, all
+keys not recognized by this package are passed to the \TikZ \cs{filldraw} command
+drawing the matrix.
+\begin{dispExample}
+   \drawmatrix[fill=yellow, draw=blue]A
+   \drawmatrix[very thick, dashed]A
+\end{dispExample}
+
+
+\subsection{The Bounding Box}
+
+All matrices are contained in a rectangular bounding box.  
+
+\begin{docDmKey}{bbox}{}{style, no default, initially empty}
+    Add options to the \TikZ \cs{node} that is the bounding box..
+    This is useful to, e.g., to visualize the 0 entries in the matrix:
+    \begin{dispExample}
+        \drawmatrix[lower, bbox/.append style={fill=blue!10}]L
+    \end{dispExample}
+\end{docDmKey}
+\begin{docDmKey}{bbox style}{=\marg{style}}{style, no default}
+    Shortcut for \refKey{/drawmatrix/bbox}|/.append style=|\meta{style}.
+\end{docDmKey}
+
+
+\begin{docDmKey}[][docmulti]{bbox height}{=\meta{dimension}}{no default, initially empty}
+\end{docDmKey}
+\begin{docDmKey}{bbox width}{=\meta{dimension}}{no default, initially empty}
+    Explicitly set the height and width of the bounding box.
+    If unset, the bounding box is just large enough to contain the matrix.
+    The label of the matrix (and thus the alignment with respect to the
+    surrounding text) are by default fixed at the center\footnote{See
+    \refKey{/drawmatrix/label anchor}.} of the bounding box, while the matrix is
+    positioned at its top-left corner.
+    \begin{dispExample}
+        \drawmatrixset{bbox style={fill=blue!10}}
+
+        \drawmatrix[bbox width=2, bbox height=1.5]A
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{bbox size}{=\meta{dimension}}{style, no default}
+    Shortcut for setting \refKey{/drawmatrix/bbox height} and
+    \refKey{/drawmatrix/bbox width} to the same value.
+    \begin{dispExample}
+        \drawmatrixset{bbox style={fill=blue!10}}
+
+        \drawmatrix[bbox size=1.5]A
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}[][docmulti]{offset height}{=\meta{dimension}}{no default, initially |0|}
+\end{docDmKey}
+\begin{docDmKey}{offset width}{=\meta{dimension}}{no default, initially |0|}
+    Sets the vertical and horizontal offset of the drawn matrix within its
+    bounding box.
+    \begin{dispExample}
+       \drawmatrixset{bbox style={fill=blue!10}}
+
+       \drawmatrix[bbox size=2, offset width=.5, offset height=.75]A
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{offset}{=\meta{dimension}}{style, no default}
+    Shortcut for setting \refKey{/drawmatrix/offset height} and
+    \refKey{/drawmatrix/bbox width} to the same value.
+    \begin{dispExample}
+       \drawmatrixset{bbox style={fill=blue!10}}
+
+       \drawmatrix[bbox size=2, offset=.5]A
+    \end{dispExample}
+\end{docDmKey}
+
+
+\subsection{Coordinate System Transformations}
+
+\begin{docDmKey}{scale}{=\meta{factor}}{style, no default}
+    Scales all dimensions passed to a matrix.  Can be used repeatedly to
+    multiply scales
+    \begin{dispExample}
+        \drawmatrix[scale=.6]A 
+        \drawmatrix[scale=.6, width=.5]B
+        \drawmatrix[scale=.7, scale=.7]B
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}[][docmulti]x{=\meta{value}}{style, no default}
+\end{docDmKey}
+\begin{docDmKey}y{=\meta{value}}{style, no default}
+    Define the coordinate system for all unit-less dimensions.
+    \begin{dispExample}
+        \drawmatrix[x=.6cm, y=.4cm]A
+        \drawmatrix[x=.6cm, y=.4cm, width=1cm]B
+    \end{dispExample}
+\end{docDmKey}
+
+
+\subsection{Position of the Label and Baseline}
+
+By default, the label's |mid| is positioned at the bounding box's |center| and
+its |base| is used as the whole drawing's baseline.  
+
+\begin{docDmKey}{label anchor}{=\meta{anchor}}{style, no default, initially |mid|}
+    Set the anchor of label's \TikZ \cs{node}.
+    \begin{dispExample}
+        \drawmatrix[label anchor=north]A
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{label pos}{=\meta{position}}{style, no default, initially |bbox.center|}
+    Define the position of the label's \TikZ \cs{node} within the picture.  The
+    following nodes and their anchors are available: |bbox| (the bounding box)
+    and the |matrix| (matrix itself).
+    \begin{dispExample}
+        \drawmatrix[label pos=bbox.south]A
+        \drawmatrix[label pos=matrix.north west]B
+    \end{dispExample}
+\end{docDmKey}
+
+\begin{docDmKey}{baseline}{=\meta{position}}{style, no default, initially |label.base|}
+    Specify how the picture is vertically aligned with the surrounding text's
+    baseline.  Options are the same anchors as for \refKey{/drawmatrix/label
+    pos} and anchors of |label| (the label).
+    \begin{dispExample}
+        A
+        \drawmatrix[baseline=label.north]A
+        \drawmatrix[baseline=bbox.south]A
+    \end{dispExample}
+\end{docDmKey}
+
+
+\section{Changing Defaults}
+
+\begin{docCommand}{drawmatrixset}{\marg{options}}
+    Applies options to to all following uses of \refCom{drawmatrix} within the current
+    scope.
+    \begin{dispExample}
+       \drawmatrixset{height=.5, lower}
+
+       $\drawmatrix A \; \drawmatrix B$
+    \end{dispExample}
+\end{docCommand}
+
+\begin{docDmKey}[][docmulti]{every picture}{}{style, no value}
+\end{docDmKey}
+\begin{docDmKey}[][docmulti]{every bbox}{}{style, no value}
+\end{docDmKey}
+\begin{docDmKey}[][docmulti]{every drawmatrix}{}{style, no value}
+\end{docDmKey}
+\begin{docDmKey}[][docmulti]{every label}{}{style, no value}
+\end{docDmKey}
+\begin{docDmKey}{every label}{}{style, no value}
+    Settings for all drawmatrix pictures, bounding boxes, matrices, and labels.
+    Options should be added not with |/.style=| but with |/.append style=| to
+    avoid messing with internals.
+    \begin{dispExample}
+        \drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}
+
+        $\drawmatrix A \; \drawmatrix[lower]B$
+    \end{dispExample}
+\end{docDmKey}
+
+
+\section{Externalization}
+
+\refCom{drawmatrix} behaves as any other \TikZ picture, therefore when
+externalization is enabled, all matrix visualizations are also externalized.
+However, since there are usually many \refCom{drawmatrix} pictures, each of
+which is very small and fast to produce, their externalization would mean a
+tremendous overhead.
+
+\begin{docDmKey}{externalize}{=true\textbar false}{no default, initially |true|}
+    Explicitly disables externalization for all \refCom{drawmatrix} pictures. It
+    does not enable externalization.
+\end{docDmKey}

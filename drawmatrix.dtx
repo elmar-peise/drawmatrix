@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2016 by Elmar Peise
+% Copyright (C) 2017 by Elmar Peise
 % -----------------------------------------
 %
 % This package is distributed under the MIT license.
@@ -9,16 +9,25 @@
 %
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-%<package>\ProvidesPackage{drawmatrix}[2016/12/20 v1.4.0 drawmatrix package]
+%<package>\ProvidesPackage{drawmatrix}[2017/06/05 v1.5.0 drawmatrix package]
 %
 %<*driver>
 \documentclass{ltxdoc}
-\usepackage{hypdoc}
 \usepackage{drawmatrix}
 \usepackage{xspace}
+\usepackage{tcolorbox}
+\usepackage{lstautodedent}
+\usepackage{makeidx}
+\makeindex
+\tcbuselibrary{documentation}
+\lstset{autodedent=true, language=TeX}
+\tcbset{
+    /tcb/docexample/.append style={sidebyside, righthand width=.2\textwidth},
+    docmulti/.style={after={}, height=\baselineskip, after skip=-.75em},
+}
+\tcbmakedocSubKey{docDmKey}{drawmatrix}
 \EnableCrossrefs
 \RecordChanges
-\CodelineIndex
 \OnlyDescription
 \begin{document}
   \DocInput{drawmatrix.dtx}
@@ -56,6 +65,8 @@
 % \changes{v1.2.0}{2016/08/25}{Added coordinate transformations}
 % \changes{v1.3.0}{2016/11/12}{Added label base (shifted exponents)}
 % \changes{v1.4.0}{2016/12/20}{Added exponenet shortcut}
+% \changes{v1.5.0}{2017/05/05}{Moved code to keys, added hooks, updated
+% documentation}
 %
 %
 % \GetFileInfo{drawmatrix.sty}
@@ -64,12 +75,6 @@
 % \author{Elmar Peise \\ \texttt{peise@aices.rwth-aachen.de}}
 % \date{\filedate \ \fileversion}
 %
-% \newenvironment{example}{
-%   \begin{center}\begin{minipage}{.9\textwidth}
-%       \scriptsize
-% }{
-%   \end{minipage}\end{center}
-% }
 % \newcommand\TikZ{Ti{\it k}Z\xspace}
 %
 % \maketitle
@@ -82,291 +87,7 @@
 %
 % \tableofcontents
 %
-% \section{Introduction}
-% In many situations, visual representations of matrices facilitate the
-% understanding of linear algebra properties, relations, and operations
-% enormously.  This package provides simple tools to bring such representations
-% to \LaTeX.  For instance,
-% \[
-%   \drawmatrix[upper]A \;
-%   \drawmatrix[width=.5]X +
-%   \drawmatrix[width=.5]X \;
-%   \drawmatrix[upper, size=.5, bbox height=1]B =
-%   \drawmatrix[width=.5]C
-% \]
-% is typeset as follows:
-% \begin{verbatim}
-% \[
-%   \drawmatrix[upper]A \;
-%   \drawmatrix[width=.5]X +
-%   \drawmatrix[width=.5]X \;
-%   \drawmatrix[upper, size=.5, bbox height=1]B =
-%   \drawmatrix[width=.5]C
-% \]
-% \end{verbatim}
-%
-%
-% \section{Drawing Matrices}
-% \DescribeMacro\drawmatrix |\drawmatrix|\oarg{options}\marg{label} draws a
-% matrix labeled \meta{label}: |\drawmatrix A| produces \drawmatrix A.  The
-% \meta{options}, which modify various aspects of drawn matrix through PGF's
-% key-value system, are introduced in the following sections.
-%
-% By default, the matrix is centered around its label, which is aligned with the
-% surrounding text.  The label is typeset in the surrounding mode and style.
-% \begin{example}
-%   |$\drawmatrix A$|:
-%    $\drawmatrix A$
-%
-%   |{\bf \drawmatrix A}|:
-%    {\bf \drawmatrix A}
-%
-%   |{\large \drawmatrix A}|:
-%    {\large \drawmatrix A}
-% \end{example}
-% In equations, parentheses (spanned with |\left| and |\right|), subscripts, and
-% superscripts naturally extend to the drawn shape: $\left(\drawmatrix{A}_i +
-% \drawmatrix{B}^{-1}\right) \drawmatrix{C}$.  Used in matrix products such as
-% $\drawmatrix{A} \drawmatrix{B}$, a little space (|\;|) helps to yield a more
-% natural result: $\drawmatrix{A} \; \drawmatrix{B}$.
-%
-% Note that the \meta{label} is stored in \DescribeMacro{label text}
-% |label text|, which can also be set directly to overwrite \meta{label}.
-% \begin{example}
-%   |$\drawmatrix[label text=B]A$|:
-%    $\drawmatrix[label text=B]A$
-% \end{example}
-%
-% \subsection{Size}
-% By default, matrices are of size $1 \times 1$ in terms of \TikZ units.  The
-% width and height of a matrix are set through, respectively,
-% \DescribeMacro{height} |width=|\meta{dimension} and \DescribeMacro{width}
-% |height=|\meta{dimension}.  A width or height of 0 are useful to represent
-% vectors:
-% \begin{example}
-%   |\drawmatrix[width=0]A|:
-%    \drawmatrix[width=0]A
-% \end{example}
-%
-% \DescribeMacro{size} |size=|\meta{dimension} sets both the width and height to
-% \meta{dimension}, resulting in a square matrix.
-%
-% \subsection{Shape}
-% By default matrices are rectangular.
-% \subsubsection{Triangular and Trapezoidal Matrices}
-% Lower and upper triangular matrices are obtained by, respectively, setting the
-% keys \DescribeMacro{lower} |lower| and \DescribeMacro{upper} |upper|.  Hereby,
-% non-square matrices become trapezoidal.
-% \begin{example}
-%   |\drawmatrix[lower]L|:
-%    \drawmatrix[lower]L
-%
-%   |\drawmatrix[upper, width=1.5]U|:
-%    \drawmatrix[upper, width=1.5]U
-% \end{example}
-%
-% \subsubsection{Banded Matrices}
-% Matrices are drawn as banded with the key \DescribeMacro{banded} |banded|.
-% The bandwidth, i.e., the horizontal/vertical extent from the diagonal, is
-% set by \DescribeMacro{bandwidth} |bandwidth=|\meta{dimension} (default: 0.3);
-% \begin{example}
-%   |\drawmatrix[banded]B|:
-%    \drawmatrix[banded]B
-%
-%   |\drawmatrix[bandwidth=.5]B|:
-%    \drawmatrix[bandwidth=.5]B
-% \end{example}
-%
-% Banding for the lower and upper part of the matrices can be specified
-% separately through \DescribeMacro{lower banded} |lower banded| and
-% \DescribeMacro{upper banded} |upper banded|.  Separate bandwidths are set
-% through \DescribeMacro{lower bandwidth} |lower bandwidth=|\meta{dimension} and
-% \DescribeMacro{upper bandwidth} |upper bandwidth=|\meta{dimension}:
-% \begin{example}
-%   |\drawmatrix[lower banded]B|:
-%    \drawmatrix[lower banded]B
-%
-%   |\drawmatrix[lower bandwidth=.5, upper bandwidth=.2]B|:
-%    \drawmatrix[lower bandwidth=.5, upper bandwidth=.2]B
-% \end{example}
-%
-% Banding on rectangular matrices applies to the smaller of the two dimensions:
-% \begin{example}
-%   |\drawmatrix[banded, width=.8]B|:
-%    \drawmatrix[banded, width=.8]B
-%
-%   |\drawmatrix[upper banded, height=.7]B|:
-%    \drawmatrix[upper banded, height=.7]B
-% \end{example}
-%
-% |banded| can be combined with |lower| or |upper| to draw the intersection of
-% both shapes.
-% \begin{example}
-%   |\drawmatrix[banded, lower]L|:
-%    \drawmatrix[banded, lower]L
-% \end{example}
-%
-% \subsubsection{Diagonal Matrices}
-% \DescribeMacro{diag} |diag| is a shorthand for |banded| with |bandwidth=0|:
-% \begin{example}
-%   |\drawmatrix[diag]D|:
-%    \drawmatrix[diag]D
-% \end{example}
-%
-% \subsubsection{Super- and subscripts}
-% \DescribeMacro{label base} |label base| defines the label to be centered in
-% the drawmatrix, the actual label will be aligned to this label at the.  The
-% default alignment is at the |base west| of the label, which can changed
-% through the \DescribeMacro{label base anchor} |label anchor| key.
-% This featur is useful to, e.g., draw centered labes with exponents:
-% \begin{example}
-%   |$\drawmatrix[size=.5]{A^T}$|:
-%    $\drawmatrix[size=.5]{A^T}$
-%
-%   |$\drawmatrix[size=.5, label base=A]{A^T}$|:
-%    $\drawmatrix[size=.5, label base=A]{A^T}$
-%
-%   |$\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$|:
-%    $\drawmatrix[size=.5, label base=A, label base anchor=base east]{^0_1A}$
-% \end{example}
-%
-% \DescribeMacro{exponent} |exponent| is a shortcut to add an exponent to matrix
-% without offsetting the labe.  Internally, it sets the |label base| to the
-% current |label text| and adds the |exponent| ot the |label text|.
-% \begin{example}
-%   |$\drawmatrix[size=.5, exponent=T]A$|:
-%    $\drawmatrix[size=.5, exponent=T]A$
-% \end{example}
-%
-% \subsection{Colors and Style}
-% By default, matrices are drawn in gray and filled white.  The \TikZ keys
-% |draw=|\meta{color} and |fill=|\meta{color} change these colors.  In fact, all
-% keys not recognized by this package are passed to the \TikZ |\filldraw|
-% command drawing the matrix.
-% \begin{example}
-%   |\drawmatrix[fill=yellow, draw=blue]A|:
-%    \drawmatrix[fill=yellow, draw=blue]A
-%
-%   |\drawmatrix[very thick, dashed]A|:
-%    \drawmatrix[very thick, dashed]A
-% \end{example}
-%
-% \subsection{The Bounding Box}
-% All matrices are contained in a rectangular bounding box.  To draw this
-% bounding box (e.g., to visualize the 0 entries in the matrix), use
-% \DescribeMacro{bbox style} |bbox style=|\marg{style};  this style is applied
-% to the \TikZ |\node| that is the bounding box.
-% \begin{example}
-%   |\drawmatrix[lower, bbox style={fill=blue!10}]L|:
-%    \drawmatrix[lower, bbox style={fill=blue!10}]L
-% \end{example}
-%
-% By default, the bounding box is just large enough to contain the matrix. Its
-% size is changed through the keys \DescribeMacro{bbox height}
-% |bbox height=|\meta{dimension} and \DescribeMacro{bbox width}
-% |bbox width=|\meta{dimension} (or \DescribeMacro{bbox size}
-% |bbox size=|\meta{dimension} to set them both).  The label of the matrix (and
-% thus the alignment with respect to the surrounding text) are fixed at the
-% center of the bounding box, while the matrix is positioned at its top-left
-% corner.
-% \begin{example}
-%   |\drawmatrixset{bbox style={fill=blue!10}}|
-%    \drawmatrixset{bbox style={fill=blue!10}}
-%
-%   |\drawmatrix[bbox width=2, bbox height=1.5]A|:
-%    \drawmatrix[bbox width=2, bbox height=1.5]A
-% \end{example}
-%
-% \sloppy The matrix can be positioned within its bounding box through
-% \DescribeMacro{offset height} |offset height=|\meta{dimension} and
-% \DescribeMacro{offset width} |offset width=|\meta{dimension} (or just
-% \DescribeMacro{offset} |offset=|\meta{dimension} to shift along the diagonal).
-% \begin{example}
-%   |\drawmatrixset{bbox style={fill=blue!10}}|
-%    \drawmatrixset{bbox style={fill=blue!10}}
-%
-%   |\drawmatrix[bbox size=2, offset width=.5, offset height=.75]A|:
-%    \drawmatrix[bbox size=2, offset width=.5, offset height=.75]A
-% \end{example}
-%
-% \subsection{Coordinate system transformations}
-%
-% |scale=|\meta{factor} scales all dimensions passed to a matrix:
-% \begin{example}
-%  |\drawmatrix[scale=.6]A \drawmatrix[scale=.6, width=.5]B|:
-%   \drawmatrix[scale=.6]A \drawmatrix[scale=.6, width=.5]B
-% \end{example}
-%
-% |x=|\meta{value} and |y=|\meta{value} define the coordinate system for all
-% unit-less dimensions.
-% \begin{example}
-%  |\drawmatrix[x=.6cm, y=.4cm]A \drawmatrix[x=.6cm, y=.4cm, width=1cm]B|:
-%   \drawmatrix[x=.6cm, y=.4cm]A \drawmatrix[x=.6cm, y=.4cm, width=1cm]B
-% \end{example}
-%
-%
-% \subsection{Position of the Label and Baseline}
-% By default, the label's |mid| is positioned at the bounding box's |center| and
-% its |base| is used as the whole drawing's baseline.  This is controlled by the
-% keys \DescribeMacro{label anchor} |label anchor=|\meta{anchor},
-% \DescribeMacro{label pos} |label pos=|\meta{position}, and
-% \DescribeMacro{baseline} |baseline=|\meta{position}. Here, \meta{position} has
-% to be an anchor of one of the following nodes: |bbox| (the bounding box),
-% |matrix| (the matrix itself), or |label| (the label).
-% \begin{example}
-%   |\drawmatrixset{bbox height=1, height=.5, bbox style={fill=blue!10}}|
-%    \drawmatrixset{bbox height=1, height=.5, bbox style={fill=blue!10}}
-%
-%   |\drawmatrix[label pos=bbox.south, label anchor=south]A|:
-%    \drawmatrix[label pos=bbox.south, label anchor=south]A
-%
-%   |\drawmatrix[label pos=matrix.north west]A|:
-%    \drawmatrix[label pos=matrix.north west]A
-%
-%   |\drawmatrix[baseline=label.north]A|:
-%    \drawmatrix[baseline=label.north]A
-%
-%   |\drawmatrix[baseline=bbox.south]A|:
-%    \drawmatrix[baseline=bbox.south]A
-% \end{example}
-%
-% \section{Changing Defaults}
-% Specifying \meta{options} with \DescribeMacro{\drawmatrixset}
-% |\drawmatrixset|\marg{options} applies them to all following uses of
-% |\drawmatrix| within the current scope.
-% \begin{example}
-%   |\drawmatrixset{height=.5, lower}|
-%    \drawmatrixset{height=.5, lower}
-%
-%   |$\drawmatrix A \; \drawmatrix B$|:
-%    $\drawmatrix A \; \drawmatrix B$
-% \end{example}
-%
-% Furthermore, \TikZ keys for the entire picture, the bounding box, the matrix
-% itself and the label can be set through the styles \DescribeMacro{every bbox}
-% |every bbox|, \DescribeMacro{every drawmatrix} |every drawmatrix|, and
-% \DescribeMacro{every label} |every label|.
-% \begin{example}
-%    |\drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}|
-%     \drawmatrixset{every drawmatrix/.append style={rounded corners=5pt}}
-%
-%    |$\drawmatrix A \; \drawmatrix[lower]B$|:
-%     $\drawmatrix A \; \drawmatrix[lower]B$
-% \end{example}
-%
-% \section{Externalization}
-% |\drawmatrix| behaves as any other \TikZ picture, therefore when
-% externalization is enabled, all matrix visualizations are also externalized.
-% However, since there are usually many |\drawmatrix| pictures, each of which is
-% very small and fast to produce, their externalization would mean a tremendous
-% overhead.  To avoid this overhead without explicitly dis- and re-enabling
-% externalization throughout the document, \DescribeMacro{externalize}
-% |externalize=false| disables externalization for all |\drawmatrix| pictures:
-% \begin{example}
-%   |\drawmatrixset{externalize=false}|
-%    \drawmatrixset{externalize=false}
-% \end{example}
-%
+% \input{userdoc}
 %
 % \section{Implementation}
 %
@@ -377,9 +98,9 @@
 %   \dm@width, \dm@zero, \RequirePackage, \begin, \def, \edef, \else, \end,
 %   \expandafter, \fi, \filldraw, \ifdrawmatrix@externalize, \ifmmode, \ifx,
 %   \let, \newcommand, \newif, \node, \path, \pgfkeys, \pgfkeysalso,
-%   \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue, \pgflinewidth,
-%   \pgfgetlastxy, \pgfmathsetlengthmacro, \pgfresetboundingbox, \pgfqkeys,
-%   \phantom, \tikz@library@external@loaded, \tikzset, \undefined,
+%   \pgfkeyscurrentname, \pgfkeyscurrentvalue, \pgfkeysnovalue, \pgfkeysvaueof,
+%   \pgflinewidth, \pgfgetlastxy, \pgfmathsetlengthmacro, \pgfresetboundingbox,
+%   \pgfqkeys, \phantom, \tikz@library@external@loaded, \tikzset, \undefined,
 % }
 %
 % This section describes the implementation details of the \textsf{drawmatrix}
@@ -395,11 +116,9 @@
 % \subsection{If for externalization}
 %
 % \TeX{} |if| representing whether to explicitly disable \TikZ externalization.
-% \begin{macro}{\ifdrawmatrix@externalize}
 %    \begin{macrocode}
 \newif\ifdrawmatrix@externalize
 %    \end{macrocode}
-% \end{macro}
 %
 % \subsection{Key Declarations and Defaults}
 %
@@ -414,8 +133,6 @@
     drawmatrix/.cd,
 %    \end{macrocode}
 %
-% \begin{macro}{picture}
-% \begin{macro}{baseline}
 %   |picture| is the style for the |\tikzpicture| in which the matrix is drawn.
 %   |baseline| sets the baseline of the picture to a named coordinate of the
 %   matrix (default: base of the label).
@@ -428,19 +145,13 @@
     y/.style={path/.append style={y=#1}},
     baseline=label.base,
 %    \end{macrocode}
-% \end{macro}\end{macro}
 %
-% \begin{macro}{bbox}\begin{macro}{bbox style}
 %   |bbox| is the style of the bounding box, to which |bbox style| appends keys.
 %    \begin{macrocode}
     bbox/.style={},
     bbox style/.style={bbox/.append style={#1}},
 %    \end{macrocode}
-% \end{macro}\end{macro}
 %
-% \begin{macro}{bbox height}
-% \begin{macro}{bbox width}
-% \begin{macro}{bbox size}
 %   |bbox height| and |bbox width| don't have default values.  |bbox size| sets
 %   them both to the same value.
 %    \begin{macrocode}
@@ -448,11 +159,7 @@
     bbox width/.initial,
     bbox size/.style={bbox height=#1, bbox width=#1},
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{offset height}
-% \begin{macro}{offset width}
-% \begin{macro}{offset}
 %   |offset height| and |offset width| are |0| by default. |offset| sets them
 %   both to the same value.
 %    \begin{macrocode}
@@ -460,11 +167,7 @@
     offset width/.initial=0,
     offset/.style={offset height=#1, offset width=#1},
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{height}
-% \begin{macro}{width}
-% \begin{macro}{size}
 %   |width| and |height| are |1| (\TikZ unit) by default. |size| sets them both
 %   to the same value.
 %    \begin{macrocode}
@@ -472,11 +175,7 @@
     width/.initial=1,
     size/.style={height=#1, width=#1},
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{lower bandwidth}
-% \begin{macro}{upper bandwidth}
-% \begin{macro}{bandwidth}
 %   The |lower bandwidth| and |upper bandwidth| don't have default values.
 %   |bandwidth| sets them both to the same value.
 %    \begin{macrocode}
@@ -484,11 +183,7 @@
     upper bandwidth/.initial,
     bandwidth/.style={lower bandwidth=#1, upper bandwidth=#1},
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{lower banded}
-% \begin{macro}{upper banded}
-% \begin{macro}{banded}
 %   |lower banded| and |upper banded| are shortcuts to set the corresponding
 %   bandwidths to the default value of |0.3| (\TikZ units). |banded| sets them
 %   both.
@@ -497,24 +192,15 @@
     upper banded/.style={upper bandwidth=.3},
     banded/.style={lower banded, upper banded},
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{lower}
-% \begin{macro}{upper}
-% \begin{macro}{diag}
 %   |lower| and |upper| are implemented by setting the opposite bandwidth to
 %   |0|. |diag| sets them both.
 %    \begin{macrocode}
     lower/.style={upper bandwidth=0},
     upper/.style={lower bandwidth=0},
-    diag/.style={lower, upper},
+    diag/.style={bandwidth=0},
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{label text}
-% \begin{macro}{label}
-% \begin{macro}{label pos}
-% \begin{macro}{label anchor}
 %   |label| is the style for the label with the text |label text|. |label pos|
 %   sets the label at a named coordinate of the matrix (default: center of the
 %   bounding box).  |label anchor| sets the label's |anchor| (default: in the
@@ -527,10 +213,7 @@
     label anchor/.style={label/.append style={anchor=#1}},
     label anchor=mid,
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro} \end{macro}
 %
-% \begin{macro}{label base}
-% \begin{macro}{label base anchor}
 %  |label base| and |label base anchor| allow to ofset labels with exponents.
 %    \begin{macrocode}
     label base/.initial,
@@ -540,9 +223,7 @@
     }},
     label base anchor=base west,
 %    \end{macrocode}
-% \end{macro}\end{macro}
 %
-% \begin{macro}{exponent}
 %   |exponent| is a shortcut to add an expontent to the label text without using
 %   the |label base|.
 %    \begin{macrocode}
@@ -551,7 +232,6 @@
         label text/.append=^{#1}
     },
 %    \end{macrocode}
-% \end{macro}
 %
 % Unknown keys are collected in |/drawmatrix/drawmatrix|.
 %    \begin{macrocode}
@@ -569,10 +249,6 @@
     },
 %    \end{macrocode}
 %
-% \begin{macro}{every picture}
-% \begin{macro}{every bbox}
-% \begin{macro}{every drawmatrix}
-% \begin{macro}{every label}
 %   The default style for matrices: |every picture| applies to all
 %   |\tikzpicture|s the matrices are drawn in, |every bbox| applies to all
 %   bounding boxes, |every drawmatrix| applies to the matrices themselves, and
@@ -600,18 +276,14 @@
         at=(drawmatrix north west)
     },
 %    \end{macrocode}
-% \end{macro}\end{macro}\end{macro}\end{macro}
 %
-% \begin{macro}{externalize}
 %   |externalize| sets a \TeX{} if (default: |true| = behave as all pictures).
 %    \begin{macrocode}
     externalize/.is if=drawmatrix@externalize,
     externalize=true,
 %    \end{macrocode}
-% \end{macro}
 %
 % \subsection{Hooks}
-% \begin{macro}{post label code}
 %   Hooks for inserting code at various points of the render.
 %    \begin{macrocode}
     pre code/.code={},
@@ -624,12 +296,10 @@
     post label code/.code={},
     post code/.code={},
 %    \end{macrocode}
-% \end{macro}
 %
 % \subsection{Code Keys}
 % The following keys contain the code that construct the drawmatrix.
 %
-% \begin{macro}{setup label code}
 % Prepare the label text and, if needed label outer text (for alignment).  This
 % needs to be outside the tikzpicture to properly detect math mode.
 %    \begin{macrocode}
@@ -644,9 +314,7 @@
     \fi%
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{externalization code}
 % Disable externalization if |externalize=false|.
 %    \begin{macrocode}
     externalization code/.code={
@@ -657,9 +325,7 @@
         \fi%
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{setup sizes code}
 % Parse width, height, the minimum dimension and zero for comparison purposes.
 %    \begin{macrocode}
     setup sizes code/.code={
@@ -715,9 +381,7 @@
         \fi
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{bbox code}
 % Reset the bounding box and begin with (drawing) the path for the bounding box.
 %    \begin{macrocode}
     bbox code/.code={
@@ -727,9 +391,7 @@
             minimum width=\dm@bboxwidth] {};
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{coordinate code}
 % Whether needed or not, declare all matrix corners.
 %    \begin{macrocode}
     coordinate code/.code={
@@ -751,9 +413,7 @@
             coordinate (drawmatrix west);
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{node code}
 % Add an invisible node the size of the matrix.
 %    \begin{macrocode}
     node code/.code={
@@ -762,9 +422,7 @@
             minimum width=\dm@width] {};
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{draw code}
 % Now, draw only what is needed of the matrix.  Otherwise path modifications
 % (e.g., such as rounded corners) might not work.
 %    \begin{macrocode}
@@ -793,9 +451,7 @@
             -- cycle;
     },
 %    \end{macrocode}
-% \end{macro}
 %
-% \begin{macro}{label code}
 % The label.
 %    \begin{macrocode}
     label code/.code={
@@ -808,20 +464,16 @@
     }
 }
 %    \end{macrocode}
-% \end{macro}
 %
 % \subsection{User Macros}
 %
-% |\drawmatrixset| as a simple shortcut like |\tikzset|.
-% \begin{macro}{\drawmatrixset}
+% \refCom{drawmatrixset} as a simple shortcut like |\tikzset|.
 %    \begin{macrocode}
 \newcommand\drawmatrixset[1]{\pgfqkeys{/drawmatrix}{#1}}
 %    \end{macrocode}
-% \end{macro}
 %
-% Here we go, the main thing: |\drawmatrix|. First, apply the options and
+% Here we go, the main thing: \refCom{drawmatrix}. First, apply the options and
 % extract the sizes from the PGF keys.
-% \begin{macro}{\drawmatrix}
 %    \begin{macrocode}
 \newcommand\drawmatrix[2][]{{%
     \drawmatrixset{
@@ -861,10 +513,9 @@
     \drawmatrixset{post code}%
 }}
 %    \end{macrocode}
-% \end{macro}
 %
 % \Finale
-% \PrintIndex
+% \printindex
 % \PrintChanges
 %
 \endinput

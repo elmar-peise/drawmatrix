@@ -8,12 +8,12 @@
 %% 
 %% This is a generated file.
 %% 
-%% Copyright (C) 2016 by Elmar Peise
+%% Copyright (C) 2017 by Elmar Peise
 %% 
 %% This package is distributed under the MIT license.
 %% 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{drawmatrix}[2016/12/20 v1.4.0 drawmatrix package]
+\ProvidesPackage{drawmatrix}[2017/06/05 v1.5.0 drawmatrix package]
 \RequirePackage{tikz}
 \newif\ifdrawmatrix@externalize
 \pgfkeys{
@@ -45,7 +45,7 @@
     banded/.style={lower banded, upper banded},
     lower/.style={upper bandwidth=0},
     upper/.style={lower bandwidth=0},
-    diag/.style={lower, upper},
+    diag/.style={bandwidth=0},
     label text/.initial,
     label/.style={},
     label pos/.style={label/.append style={at=(drawmatrix #1)}},
