@@ -1,10 +1,7 @@
 addons:
   apt:
     packages:
-      - texlive-fonts-recommended 
-      - texlive-latex-recommended
-      - texlive-fonts-extra 
-      - texlive-latex-extra 
+      - texlive-full 
       - pgf
 install:
   - tlmgr install tcolorbox
