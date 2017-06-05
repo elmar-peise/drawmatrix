@@ -3,6 +3,4 @@ addons:
     packages:
       - texlive-full 
       - pgf
-install:
-  - tlmgr install tcolorbox
 script: make TEXFLAGS="-interaction=nonstopmode -halt-on-error"
