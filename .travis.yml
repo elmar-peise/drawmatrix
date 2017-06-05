@@ -1,7 +1,11 @@
 addons:
   apt:
     packages:
-      - texlive-full 
-      - texlive-latex-extra
+      - texlive-fonts-recommended 
+      - texlive-latex-recommended
+      - texlive-fonts-extra 
+      - texlive-latex-extra 
       - pgf
+install:
+  - tlmgr install tcolorbox
 script: make TEXFLAGS="-interaction=nonstopmode -halt-on-error"
